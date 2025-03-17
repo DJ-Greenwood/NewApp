@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Preferences - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="page-title">User Preferences</h1>
+            <p class="text-muted">Customize your application settings and experience</p>
+        </div>
+        <div class="col-md-4 d-flex justify-content-end align-items-center">
+            <a href="{% url 'users:profile' %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Back to Profile
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <ul class="nav nav-tabs card-header-tabs" id="preferenceTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="appearance-tab" data-bs-toggle="tab" data-bs-target="#appearance" type="button" role="tab" aria-controls="appearance" aria-selected="true">Appearance</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="ai-settings-tab" data-bs-toggle="tab" data-bs-target="#ai-settings" type="button" role="tab" aria-controls="ai-settings" aria-selected="false">AI Settings</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="interface-tab" data-bs-toggle="tab" data-bs-target="#interface" type="button" role="tab" aria-controls="interface" aria-selected="false">Interface</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications" type="button" role="tab" aria-controls="notifications" aria-selected="false">Notifications</button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="tab-content" id="preferenceTabsContent">
+                    <!-- Appearance Tab -->
+                    <div class="tab-pane fade show active" id="appearance" role="tabpanel" aria-labelledby="appearance-tab">
+                        <h5 class="mb-4">Visual Preferences</h5>
+                        
+                        <div class="mb-3">
+                            <label for="id_theme" class="form-label">Theme</label>
+                            {{ form.theme }}
+                            <div class="form-text">Choose your preferred color theme</div>
+                            {% if form.theme.errors %}
+                                <div class="text-danger mt-1">
+                                    {{ form.theme.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.enable_animations }}
+                            <label class="form-check-label" for="id_enable_animations">
+                                Enable animations
+                            </label>
+                            <div class="form-text">Page transitions and visual effects</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.compact_view }}
+                            <label class="form-check-label" for="id_compact_view">
+                                Compact view
+                            </label>
+                            <div class="form-text">Use a more compact UI layout</div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Settings Tab -->
+                    <div class="tab-pane fade" id="ai-settings" role="tabpanel" aria-labelledby="ai-settings-tab">
+                        <h5 class="mb-4">AI Generation Settings</h5>
+                        
+                        <div class="mb-3">
+                            <label for="id_default_ai_model" class="form-label">Default AI Model</label>
+                            {{ form.default_ai_model }}
+                            <div class="form-text">Choose your preferred AI model for conversations</div>
+                            {% if form.default_ai_model.errors %}
+                                <div class="text-danger mt-1">
+                                    {{ form.default_ai_model.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_default_temperature" class="form-label">Temperature (Creativity): {{ form.default_temperature.value }}</label>
+                            {{ form.default_temperature }}
+                            <div class="form-text">Higher values make responses more creative but less predictable</div>
+                            {% if form.default_temperature.errors %}
+                                <div class="text-danger mt-1">
+                                    {{ form.default_temperature.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_default_max_tokens" class="form-label">Max Tokens</label>
+                            {{ form.default_max_tokens }}
+                            <div class="form-text">Maximum tokens (words) in AI responses</div>
+                            {% if form.default_max_tokens.errors %}
+                                <div class="text-danger mt-1">
+                                    {{ form.default_max_tokens.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Interface Tab -->
+                    <div class="tab-pane fade" id="interface" role="tabpanel" aria-labelledby="interface-tab">
+                        <h5 class="mb-4">Interface Preferences</h5>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.auto_save_conversations }}
+                            <label class="form-check-label" for="id_auto_save_conversations">
+                                Auto-save conversations
+                            </label>
+                            <div class="form-text">Automatically save conversations as you chat</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.enable_markdown }}
+                            <label class="form-check-label" for="id_enable_markdown">
+                                Enable Markdown rendering
+                            </label>
+                            <div class="form-text">Format responses with Markdown styling</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.enable_code_highlighting }}
+                            <label class="form-check-label" for="id_enable_code_highlighting">
+                                Enable code syntax highlighting
+                            </label>
+                            <div class="form-text">Highlight code blocks in conversations</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.enable_message_timestamps }}
+                            <label class="form-check-label" for="id_enable_message_timestamps">
+                                Show message timestamps
+                            </label>
+                            <div class="form-text">Display time sent for each message</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notifications Tab -->
+                    <div class="tab-pane fade" id="notifications" role="tabpanel" aria-labelledby="notifications-tab">
+                        <h5 class="mb-4">Notification Settings</h5>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.email_notifications }}
+                            <label class="form-check-label" for="id_email_notifications">
+                                Email notifications
+                            </label>
+                            <div class="form-text">Receive email updates about your account</div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Additional notification options will be coming soon!
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-end mt-4">
+                    <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Preferences</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update temperature value display as slider changes
+    document.addEventListener('DOMContentLoaded', function() {
+        const temperatureSlider = document.getElementById('id_default_temperature');
+        const temperatureLabel = document.querySelector('label[for="id_default_temperature"]');
+        
+        if (temperatureSlider && temperatureLabel) {
+            const baseLabelText = 'Temperature (Creativity): ';
+            temperatureSlider.addEventListener('input', function() {
+                temperatureLabel.textContent = baseLabelText + this.value;
+            });
+        }
+    });
+</script>
+{% endblock %}

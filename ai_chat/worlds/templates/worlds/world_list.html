@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}My Worlds - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+    <div>
+        <h1 class="text-3xl font-serif font-bold text-navy mb-2">My Worlds</h1>
+        <p class="text-navy-light">Create and manage your worldbuilding projects.</p>
+    </div>
+    
+    <div class="mt-4 md:mt-0">
+        <a href="{% url 'worlds:create' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200">
+            <i class="fas fa-plus mr-2"></i> Create World
+        </a>
+    </div>
+</div>
+
+{% if worlds %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for world in worlds %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+        <a href="{% url 'worlds:detail' world.id %}" class="block">
+            <div class="p-6">
+                <h2 class="text-xl font-serif font-bold mb-2">{{ world.name }}</h2>
+                <p class="text-navy-light mb-4">{{ world.description|truncatechars:100 }}</p>
+                
+                <div class="flex justify-between text-sm text-navy-light">
+                    <span>{{ world.genre }}</span>
+                    <span>{{ world.created_at|date:"M d, Y" }}</span>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-lg shadow-md p-8 text-center">
+    <div class="w-20 h-20 bg-amber-light rounded-full flex items-center justify-center mx-auto mb-6">
+        <i class="fas fa-globe text-3xl text-navy"></i>
+    </div>
+    <h3 class="text-xl font-bold mb-2">No Worlds Yet</h3>
+    <p class="text-navy-light mb-6">You haven't created any worlds yet. Start by creating your first world!</p>
+    <a href="{% url 'worlds:create' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-6 rounded-lg transition duration-200">
+        Create Your First World
+    </a>
+</div>
+{% endif %}
+{% endblock %}

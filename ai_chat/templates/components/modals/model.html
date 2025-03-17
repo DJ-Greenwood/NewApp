@@ -1,0 +1,47 @@
+{% comment %}
+Usage: {% include "components/modals/modal.html" with id="myModal" title="Modal Title" %}
+Parameters:
+- id: Modal ID (required)
+- title: Modal title (required)
+- footer: Boolean to show/hide footer (default: True)
+- size: Modal size (sm, md, lg, xl) - default: md
+- cancel_text: Text for cancel button (default: "Cancel")
+- submit_text: Text for submit button (default: "Submit")
+- submit_color: Color for submit button (default: "primary")
+{% endcomment %}
+
+<div class="fixed inset-0 z-50 hidden bg-navy bg-opacity-75 flex items-center justify-center" id="{{ id }}">
+    <div class="bg-white rounded-lg shadow-lg {% if size == 'sm' %}max-w-sm{% elif size == 'lg' %}max-w-lg{% elif size == 'xl' %}max-w-xl{% else %}max-w-md{% endif %} w-full mx-4 paper-texture">
+        <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+            <h3 class="font-serif font-bold text-xl text-navy">{{ title }}</h3>
+            <button 
+                onclick="document.getElementById('{{ id }}').classList.add('hidden')"
+                class="text-navy hover:text-amber focus:outline-none"
+            >
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="p-6 space-y-4">
+            {{ content|safe }}
+        </div>
+        
+        {% if footer|default:True %}
+        <div class="px-6 py-4 border-t border-cream-dark bg-cream-light flex justify-end">
+            <button 
+                type="button"
+                onclick="document.getElementById('{{ id }}').classList.add('hidden')"
+                class="bg-gray-300 hover:bg-gray-400 text-navy font-bold py-2 px-4 rounded-lg transition duration-200 mr-2"
+            >
+                {{ cancel_text|default:"Cancel" }}
+            </button>
+            <button 
+                type="submit"
+                class="bg-{{ submit_color|default:'amber' }} hover:bg-{{ submit_color|default:'amber' }}-dark text-{% if submit_color == 'navy' %}cream-light{% else %}navy{% endif %} font-bold py-2 px-4 rounded-lg transition duration-200"
+            >
+                {{ submit_text|default:"Submit" }}
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>

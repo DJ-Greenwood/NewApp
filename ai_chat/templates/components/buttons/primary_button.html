@@ -1,0 +1,20 @@
+{% comment %}
+Usage: {% include "components/buttons/primary_button.html" with text="Click Me" url="/some-url" icon="fa-plus" %}
+Parameters:
+- text: Button text
+- url: Button URL (optional, if not provided, a button element will be used)
+- icon: Font Awesome icon class (optional)
+- type: Button type (default: "button")
+- classes: Additional CSS classes (optional)
+- attrs: Additional attributes (optional)
+{% endcomment %}
+
+{% if url %}
+<a href="{{ url }}" class="{% if classes %}{{ classes }}{% else %}inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-3 px-8 rounded-lg transition duration-200 text-center{% endif %}" {% if attrs %}{{ attrs|safe }}{% endif %}>
+    {% if icon %}<i class="fas {{ icon }} mr-2"></i>{% endif %}{{ text }}
+</a>
+{% else %}
+<button type="{{ type|default:'button' }}" class="{% if classes %}{{ classes }}{% else %}inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-3 px-8 rounded-lg transition duration-200 text-center{% endif %}" {% if attrs %}{{ attrs|safe }}{% endif %}>
+    {% if icon %}<i class="fas {{ icon }} mr-2"></i>{% endif %}{{ text }}
+</button>
+{% endif %}

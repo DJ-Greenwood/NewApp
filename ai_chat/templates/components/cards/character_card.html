@@ -1,0 +1,52 @@
+{% comment %}
+Usage: {% include "components/cards/character_card.html" with character=character %}
+Parameters:
+- character: Character object
+- show_actions: Boolean to show/hide action buttons (default: True)
+- classes: Additional CSS classes (optional)
+{% endcomment %}
+
+<div class="{% if classes %}{{ classes }}{% else %}bg-white rounded-lg shadow-md overflow-hidden paper-texture border-2 border-transparent hover:border-amber transition duration-200{% endif %}">
+    <a href="{% url 'characters:detail' character.id %}" class="block">
+        <div class="h-40 bg-navy flex items-center justify-center relative">
+            {% if character.avatar %}
+            <img src="{{ character.avatar.url }}" alt="{{ character.name }}" class="w-full h-full object-cover">
+            {% else %}
+            <div class="w-24 h-24 rounded-full bg-cream-light flex items-center justify-center text-navy text-4xl font-bold">
+                {{ character.name|slice:":1" }}
+            </div>
+            {% endif %}
+            {% if character.total_interactions > 0 %}
+            <div class="absolute top-2 right-2 bg-amber rounded-full px-2 py-1 text-xs font-bold">
+                {{ character.total_interactions }} interactions
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="p-4">
+            <h3 class="text-xl font-bold mb-2">{{ character.name }}</h3>
+            <p class="text-navy-light text-sm mb-3 line-clamp-2">{{ character.description }}</p>
+            
+            <div class="flex items-center text-xs">
+                <span class="text-gray-500">
+                    {% if character.last_interaction %}
+                    Last interaction: {{ character.last_interaction|date:"M d, Y" }}
+                    {% else %}
+                    Created: {{ character.created_at|date:"M d, Y" }}
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </a>
+    
+    {% if show_actions|default:True %}
+    <div class="px-4 pb-4 flex justify-between">
+        <a href="{% url 'conversations:create_with_character' character.id %}" class="text-amber hover:text-amber-dark font-bold text-sm">
+            <i class="fas fa-comment-dots mr-1"></i> Chat
+        </a>
+        <a href="{% url 'characters:edit' character.id %}" class="text-navy hover:text-navy-light font-bold text-sm">
+            <i class="fas fa-edit mr-1"></i> Edit
+        </a>
+    </div>
+    {% endif %}
+</div>

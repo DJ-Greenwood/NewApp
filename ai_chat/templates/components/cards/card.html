@@ -1,0 +1,31 @@
+{% comment %}
+Usage: {% include "components/cards/card.html" with title="Card Title" header=True footer=False %}
+Parameters:
+- title: Card title (optional)
+- header: Boolean to show/hide header (default: False)
+- footer: Boolean to show/hide footer (default: False)
+- header_actions: HTML content for the right side of the header (optional)
+- footer_content: HTML content for the footer (optional)
+- classes: Additional CSS classes for the card (optional)
+{% endcomment %}
+
+<div class="{% if classes %}{{ classes }}{% else %}bg-white rounded-lg shadow-md overflow-hidden paper-texture{% endif %}">
+    {% if header and title %}
+    <div class="px-6 py-4 border-b border-cream-dark {% if header_classes %}{{ header_classes }}{% endif %} {% if header_actions %}d-flex justify-content-between align-items-center{% endif %}">
+        <h5 class="{% if header_title_classes %}{{ header_title_classes }}{% else %}font-serif font-bold text-xl text-navy{% endif %} mb-0">{{ title }}</h5>
+        {% if header_actions %}
+            {{ header_actions }}
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <div class="{% if body_classes %}{{ body_classes }}{% else %}p-6{% endif %}">
+        {{ content|safe }}
+    </div>
+    
+    {% if footer %}
+    <div class="{% if footer_classes %}{{ footer_classes }}{% else %}px-6 py-4 border-t border-cream-dark{% endif %}">
+        {{ footer_content|safe }}
+    </div>
+    {% endif %}
+</div>

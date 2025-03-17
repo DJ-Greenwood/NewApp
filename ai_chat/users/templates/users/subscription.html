@@ -1,0 +1,433 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Subscription Management - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="page-title">Subscription Management</h1>
+            <p class="text-muted">Manage your plan and token allocation</p>
+        </div>
+        <div class="col-md-4 d-flex justify-content-end align-items-center">
+            <a href="{% url 'users:profile' %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Back to Profile
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Current subscription info -->
+    <div class="card border-0 shadow-sm mb-5">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Current Subscription</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 class="text-primary mb-3">{{ current_tier.name }} Plan</h4>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            <span class="badge bg-primary rounded-pill fs-5 px-3 py-2">
+                                {{ current_tier.tokens_per_month|intcomma }}
+                            </span>
+                        </div>
+                        <div>
+                            <span class="fs-5">Tokens per month</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-muted mb-4">
+                        Your subscription renews on {{ subscription_end_date|date:"F j, Y" }}. You are currently using {{ token_usage }} of {{ current_tier.tokens_per_month|intcomma }} available tokens this billing cycle.
+                    </p>
+                    
+                    {% if subscription_tier != 'free' %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="text-success me-2">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <div>Active subscription</div>
+                    </div>
+                    {% endif %}
+                    
+                    <h5 class="mt-4 mb-3">Plan Features</h5>
+                    <ul class="list-unstyled">
+                        {% for feature in current_tier.features %}
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            {{ feature }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100 border bg-light">
+                        <div class="card-body">
+                            <h5 class="mb-3">Billing Summary</h5>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Plan</span>
+                                <span class="fw-bold">{{ current_tier.name }}</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Price</span>
+                                <span class="fw-bold">
+                                    {% if current_tier.price == 0 %}
+                                        Free
+                                    {% else %}
+                                        ${{ current_tier.price }}/month
+                                    {% endif %}
+                                </span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Next billing date</span>
+                                <span class="fw-bold">{{ subscription_end_date|date:"F j, Y" }}</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Payment method</span>
+                                <span class="fw-bold">
+                                    {% if payment_method %}
+                                        {{ payment_method }}
+                                    {% else %}
+                                        None
+                                    {% endif %}
+                                </span>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="d-grid gap-2 mt-4">
+                                {% if subscription_tier != 'free' %}
+                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#changePaymentModal">
+                                    <i class="bi bi-credit-card me-1"></i> Update Payment Method
+                                </button>
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelSubscriptionModal">
+                                    <i class="bi bi-x-circle me-1"></i> Cancel Subscription
+                                </button>
+                                {% else %}
+                                <a href="#subscription-plans" class="btn btn-primary">
+                                    <i class="bi bi-arrow-up-circle me-1"></i> Upgrade Your Plan
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Subscription plans -->
+    <div id="subscription-plans" class="mb-5">
+        <h2 class="mb-4">Available Plans</h2>
+        
+        <div class="row">
+            {% for plan in subscription_plans %}
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm {% if current_tier.id == plan.id %}border border-primary{% endif %}">
+                    {% if current_tier.id == plan.id %}
+                    <div class="card-badge">
+                        <span class="badge bg-primary">Current Plan</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-header bg-white">
+                        <h4 class="my-0 fw-normal">{{ plan.name }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <h1 class="card-title">
+                            ${{ plan.price }}<small class="text-muted fw-light">/mo</small>
+                        </h1>
+                        
+                        <div class="py-3 text-center">
+                            <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">
+                                {{ plan.tokens_per_month|intcomma }} tokens/month
+                            </span>
+                        </div>
+                        
+                        <ul class="list-unstyled mt-4 mb-5">
+                            {% for feature in plan.features %}
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                {{ feature }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        
+                        <div class="d-grid">
+                            {% if current_tier.id == plan.id %}
+                                <button class="btn btn-outline-primary" disabled>Current Plan</button>
+                            {% elif plan.id == 'free' and subscription_tier != 'free' %}
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#downgradeModal">
+                                    Downgrade
+                                </button>
+                            {% elif plan.price > current_tier.price %}
+                                <form method="post" action="{% url 'users:subscription' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="tier" value="{{ plan.id }}">
+                                    <button type="submit" class="btn btn-primary">Upgrade</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{% url 'users:subscription' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="tier" value="{{ plan.id }}">
+                                    <button type="submit" class="btn btn-outline-primary">Switch Plan</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Token add-ons -->
+    <div class="card border-0 shadow-sm mb-5">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Need More Tokens?</h5>
+        </div>
+        <div class="card-body">
+            <p class="mb-4">
+                Purchase additional tokens that will be added to your monthly allocation. These tokens never expire and can be used at any time.
+            </p>
+            
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Basic Pack</h5>
+                            <h3 class="my-3">5,000 Tokens</h3>
+                            <h4 class="card-text text-primary mb-4">$4.99</h4>
+                            <div class="d-grid">
+                                <form method="post" action="{% url 'token_management:purchase_tokens' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="token_package" value="basic">
+                                    <button type="submit" class="btn btn-outline-primary">Purchase</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border">
+                        <div class="card-body text-center">
+                            <span class="position-absolute top-0 start-50 translate-middle badge bg-primary px-3 py-2">
+                                Best Value
+                            </span>
+                            <h5 class="card-title">Standard Pack</h5>
+                            <h3 class="my-3">25,000 Tokens</h3>
+                            <h4 class="card-text text-primary mb-4">$19.99</h4>
+                            <div class="d-grid">
+                                <form method="post" action="{% url 'token_management:purchase_tokens' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="token_package" value="standard">
+                                    <button type="submit" class="btn btn-primary">Purchase</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Premium Pack</h5>
+                            <h3 class="my-3">100,000 Tokens</h3>
+                            <h4 class="card-text text-primary mb-4">$49.99</h4>
+                            <div class="d-grid">
+                                <form method="post" action="{% url 'token_management:purchase_tokens' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="token_package" value="premium">
+                                    <button type="submit" class="btn btn-outline-primary">Purchase</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Billing history -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Billing History</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if billing_history %}
+                        {% for bill in billing_history %}
+                        <tr>
+                            <td>{{ bill.date|date:"M d, Y" }}</td>
+                            <td>{{ bill.description }}</td>
+                            <td>${{ bill.amount }}</td>
+                            <td>
+                                <span class="badge {% if bill.status == 'paid' %}bg-success{% elif bill.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ bill.status|title }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a href="#" class="btn btn-sm btn-outline-secondary">Receipt</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <p class="text-muted mb-0">No billing history available.</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Change Payment Method Modal -->
+<div class="modal fade" id="changePaymentModal" tabindex="-1" aria-labelledby="changePaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePaymentModalLabel">Update Payment Method</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Change your payment method for future billing.</p>
+                
+                <form id="paymentForm">
+                    <div class="mb-3">
+                        <label for="cardNumber" class="form-label">Card Number</label>
+                        <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="expiryDate" class="form-label">Expiry Date</label>
+                            <input type="text" class="form-control" id="expiryDate" placeholder="MM/YY" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="cvv" class="form-label">CVV</label>
+                            <input type="text" class="form-control" id="cvv" placeholder="123" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="cardholderName" class="form-label">Cardholder Name</label>
+                        <input type="text" class="form-control" id="cardholderName" placeholder="John Doe" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Update Payment Method</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Subscription Modal -->
+<div class="modal fade" id="cancelSubscriptionModal" tabindex="-1" aria-labelledby="cancelSubscriptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelSubscriptionModalLabel">Cancel Subscription</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                </div>
+                
+                <h5 class="text-center mb-3">Are you sure you want to cancel?</h5>
+                
+                <p>Your subscription will remain active until the end of your current billing period on {{ subscription_end_date|date:"F j, Y" }}. After this date:</p>
+                
+                <ul>
+                    <li>Your account will be downgraded to the Free plan</li>
+                    <li>Monthly token allocation will be reduced to {{ free_tier_tokens|intcomma }}</li>
+                    <li>Premium features will no longer be available</li>
+                </ul>
+                
+                <div class="alert alert-warning">
+                    <i class="bi bi-info-circle me-2"></i>
+                    You won't receive any refund for the current billing period.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep My Subscription</button>
+                <form method="post" action="{% url 'users:cancel_subscription' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Cancel Subscription</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Downgrade Modal -->
+<div class="modal fade" id="downgradeModal" tabindex="-1" aria-labelledby="downgradeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="downgradeModalLabel">Downgrade to Free Plan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-arrow-down-circle text-warning" style="font-size: 3rem;"></i>
+                </div>
+                
+                <h5 class="text-center mb-3">Are you sure you want to downgrade?</h5>
+                
+                <p>Your current plan will remain active until the end of your billing period. After downgrading:</p>
+                
+                <ul>
+                    <li>Your monthly token allocation will be reduced to {{ free_tier_tokens|intcomma }}</li>
+                    <li>You'll lose access to premium features</li>
+                    <li>Character creation capabilities will be limited</li>
+                </ul>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    You can upgrade again at any time.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'users:subscription' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="tier" value="free">
+                    <button type="submit" class="btn btn-warning">Downgrade</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

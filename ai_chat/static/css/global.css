@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Bootstrap-like global styles */
+@layer base {
+    html, body {
+        @apply font-sans text-gray-700 bg-gray-100;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-semibold text-navy-dark;
+    }
+
+    a {
+        @apply text-amber hover:text-amber-dark transition duration-200;
+    }
+
+    button {
+        @apply px-4 py-2 rounded-md bg-navy text-white hover:bg-navy-dark transition duration-200;
+    }
+
+    /* Bootstrap-like container */
+    .container {
+        @apply mx-auto px-4 max-w-7xl;
+    }
+
+    /* Card styles */
+    .card {
+        @apply bg-white rounded-lg shadow-md overflow-hidden;
+    }
+
+    /* Section headers */
+    .section-title {
+        @apply text-3xl font-serif font-bold text-navy mb-6;
+    }
+
+    /* Custom button styles */
+    .btn {
+        @apply inline-block font-bold py-2 px-4 rounded-lg transition duration-200;
+    }
+    
+    .btn-primary {
+        @apply bg-amber text-navy hover:bg-amber-dark;
+    }
+
+    .btn-secondary {
+        @apply bg-navy text-white hover:bg-navy-light;
+    }
+
+    .btn-outline {
+        @apply border border-navy text-navy hover:bg-navy hover:text-white;
+    }
+}

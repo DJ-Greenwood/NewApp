@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MyImaginaryFriends.ai{% endblock %}</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            light: '#1D3A5F',
+                            DEFAULT: '#102A43',
+                            dark: '#0B1F32',
+                        },
+                        cream: {
+                            light: '#FFF8E8',
+                            DEFAULT: '#F9F2DC',
+                            dark: '#E6D9B8',
+                        },
+                        amber: {
+                            light: '#FFD166',
+                            DEFAULT: '#F4B740',
+                            dark: '#D69E21',
+                        },
+                    },
+                    fontFamily: {
+                        serif: ['Merriweather', 'serif'],
+                        sans: ['Open Sans', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    
+    <!-- Custom CSS -->
+    <style>
+        /* Storybook-inspired paper texture */
+        .paper-texture {
+            background-color: #F9F2DC;
+            background-image: url('data:image/svg+xml;utf8,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><filter id="noise" x="0" y="0"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.15 0"/></filter><rect width="100" height="100" filter="url(%23noise)"/></svg>');
+            background-blend-mode: multiply;
+        }
+        
+        /* Ink splash animation */
+        @keyframes ink-splash {
+            0% { transform: scale(0); opacity: 0; }
+            40% { opacity: 0.8; }
+            100% { transform: scale(15); opacity: 0; }
+        }
+        
+        .ink-splash {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            background: rgba(16, 42, 67, 0.3);
+            transform: scale(0);
+            z-index: 9999;
+        }
+        
+        .ink-splash.animate {
+            animation: ink-splash 1s ease-out forwards;
+        }
+        
+        /* Page turn animation */
+        @keyframes page-turn {
+            0% { transform: perspective(1200px) rotateY(0); }
+            100% { transform: perspective(1200px) rotateY(-30deg); }
+        }
+        
+        .page-transition {
+            transform-origin: left;
+            backface-visibility: hidden;
+        }
+        
+        .page-transition.animate {
+            animation: page-turn 0.5s ease-in-out forwards;
+        }
+        
+        /* Token usage meter styling */
+        .token-meter {
+            height: 8px;
+            border-radius: 4px;
+            background: #E2E8F0;
+            overflow: hidden;
+        }
+        
+        .token-meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4FD1C5 0%, #2C7A7B 100%);
+            transition: width 0.5s ease;
+        }
+        
+        .token-meter-fill.high {
+            background: linear-gradient(90deg, #F6AD55 0%, #DD6B20 100%);
+        }
+        
+        .token-meter-fill.critical {
+            background: linear-gradient(90deg, #FC8181 0%, #C53030 100%);
+        }
+        
+        /* Line clamp for multi-line text truncation */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+    
+    <!-- Alpine.js for UI interactions -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-cream-light min-h-screen flex flex-col font-sans text-navy-dark">
+    <header class="bg-navy shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="{% url 'home' %}" class="text-cream-light text-2xl font-serif font-bold flex items-center">
+                <i class="fas fa-feather-alt mr-2 text-amber"></i>
+                MyImaginaryFriends
+            </a>
+            
+            <nav class="hidden md:flex space-x-4">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="text-cream-light hover:text-amber transition duration-200">Dashboard</a>
+                    <a href="{% url 'characters:list' %}" class="text-cream-light hover:text-amber transition duration-200">Characters</a>
+                    <a href="{% url 'conversations:list' %}" class="text-cream-light hover:text-amber transition duration-200">Conversations</a>
+                    <a href="{% url 'stories:list' %}" class="text-cream-light hover:text-amber transition duration-200">Stories</a>
+                    <a href="{% url 'journals:list' %}" class="text-cream-light hover:text-amber transition duration-200">Journals</a>
+                    <a href="{% url 'worlds:list' %}" class="text-cream-light hover:text-amber transition duration-200">Worlds</a>
+                {% else %}
+                    <a href="{% url 'users:login' %}" class="text-cream-light hover:text-amber transition duration-200">Login</a>
+                    <a href="{% url 'users:signup' %}" class="text-cream-light hover:text-amber transition duration-200">Sign Up</a>
+                {% endif %}
+            </nav>
+            
+            {% if user.is_authenticated %}
+            <div class="flex items-center space-x-5">
+                <!-- Token usage card -->
+                {% comment %}
+                    {include "components/alerts/token_usage.html" with token_usage=token_usage token_limit=token_limit token_percent=token_percent days_until_reset=days_until_reset %}
+                {% endcomment %}
+               
+                <!-- User menu dropdown -->
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" class="flex items-center text-cream-light focus:outline-none">
+                        <span class="hidden md:inline-block mr-1">{{ user.username }}</span>
+                        <img src="{% if user.profile_picture and user.profile_picture.url %}{{ user.profile_picture.url }}{% else %}/static/images/default_avatar.png{% endif %}" 
+                             alt="{{ user.username }}" 
+                             class="h-8 w-8 rounded-full border-2 border-cream-light object-cover">
+                    </button>
+                    
+                    <div x-show="open" 
+                         @click.away="open = false"
+                         class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                        <a href="{% url 'users:profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                        <a href="{% url 'token_management:overview' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            Token Management
+                            {% if token_alerts > 0 %}
+                                <span class="ml-1 px-2 py-0.5 text-xs bg-red-500 text-white rounded-full">{{ token_alerts }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'users:subscription' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Subscription</a>
+                        <a href="{% url 'users:logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                    </div>
+                </div>
+                
+                <!-- Mobile menu button -->
+                <button class="md:hidden text-cream-light" x-data="{ open: false }" @click="open = !open">
+                    <i class="fas fa-bars"></i>
+                    
+                    <!-- Mobile menu -->
+                    <div x-show="open" 
+                         @click.away="open = false"
+                         class="absolute top-16 right-4 bg-white rounded-md shadow-lg py-2 w-48 z-50">
+                        <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a>
+                        <a href="{% url 'characters:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Characters</a>
+                        <a href="{% url 'conversations:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Conversations</a>
+                        <a href="{% url 'stories:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Stories</a>
+                        <a href="{% url 'journals:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Journals</a>
+                        <a href="{% url 'worlds:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Worlds</a>
+                        <hr class="my-1">
+                        <a href="{% url 'users:profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                        <a href="{% url 'token_management:overview' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            Token Management
+                            {% if token_alerts > 0 %}
+                                <span class="ml-1 px-2 py-0.5 text-xs bg-red-500 text-white rounded-full">{{ token_alerts }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'users:logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                    </div>
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </header>
+    
+    <!-- Trial conversion modal -->
+    {% if show_conversion and is_trial %}
+    <div id="conversion-modal" class="fixed inset-0 bg-navy bg-opacity-70 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4">
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-2xl font-serif font-bold text-navy">Your Free Trial is Ending Soon!</h2>
+                <button id="close-conversion" class="text-gray-500 hover:text-navy">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <p class="text-navy-light mb-4">
+                    You have <span class="font-bold text-amber">{{ trial_days_left }} days</span> left in your free trial. 
+                    Don't lose access to your characters and conversations!
+                </p>
+                
+                <div class="bg-cream-light p-4 rounded-lg mb-4">
+                    <h3 class="font-bold mb-2">Your Trial Usage</h3>
+                    <ul class="space-y-1 text-sm">
+                        <li>Tokens Used: <span class="font-medium">{{ token_usage }}</span></li>
+                        <!-- Add other usage stats here -->
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4">
+                <a href="{% url 'token_management:trial_conversion' %}" 
+                   class="bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200 text-center flex-1">
+                    Upgrade Now
+                </a>
+                <button id="remind-later" 
+                        class="border border-navy hover:bg-navy hover:text-white text-navy font-bold py-2 px-4 rounded-lg transition duration-200 flex-1">
+                    Remind Me Later
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Alert messages -->
+    {% if messages %}
+    <div class="container mx-auto px-4 py-4">
+        {% for message in messages %}
+        <div class="py-3 px-4 mb-2 rounded {% if message.tags == 'error' %}bg-red-100 text-red-700{% elif message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700{% else %}bg-blue-100 text-blue-700{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Main content -->
+    <main class="flex-grow container mx-auto px-4 py-6">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-navy-dark text-cream-light py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="mb-6 md:mb-0">
+                    <h3 class="text-xl font-serif font-bold mb-4 flex items-center">
+                        <i class="fas fa-feather-alt mr-2 text-amber"></i>
+                        MyImaginaryFriends
+                    </h3>
+                    <p class="text-sm text-cream-dark max-w-md">
+                        Create and chat with AI characters, write stories together, and build immersive worlds.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
+                    <div>
+                        <h4 class="text-amber font-semibold mb-3">Features</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="{% url 'characters:list' %}" class="text-cream-dark hover:text-amber transition duration-200">Characters</a></li>
+                            <li><a href="{% url 'conversations:list' %}" class="text-cream-dark hover:text-amber transition duration-200">Conversations</a></li>
+                            <li><a href="{% url 'stories:list' %}" class="text-cream-dark hover:text-amber transition duration-200">Stories</a></li>
+                            <li><a href="{% url 'worlds:list' %}" class="text-cream-dark hover:text-amber transition duration-200">Worlds</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-amber font-semibold mb-3">Resources</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="#" class="text-cream-dark hover:text-amber transition duration-200">Help Center</a></li>
+                            <li><a href="#" class="text-cream-dark hover:text-amber transition duration-200">Tutorials</a></li>
+                            <li><a href="#" class="text-cream-dark hover:text-amber transition duration-200">Blog</a></li>
+                            <li><a href="#" class="text-cream-dark hover:text-amber transition duration-200">Pricing</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-amber font-semibold mb-3">Company</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="#" class="text-cream-dark hover:text-amber transition duration-200">About</a></li>
+                            <li><a href="#" class="text-cream-dark hover:text-amber transition duration-200">Terms</a></li>
+                            <li><a href="#" class="text-cream-dark hover:text-amber transition duration-200">Privacy</a></li>
+                            <li><a href="#" class="text-cream-dark hover:text-amber transition duration-200">Contact</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 pt-6 border-t border-navy text-center text-xs text-cream-dark">
+                &copy; {% now "Y" %} MyImaginaryFriends.ai. All rights reserved.
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Ink splash container for animations -->
+    <div id="ink-splash-container"></div>
+    
+    <!-- JavaScript -->
+    <script>
+        // Ink splash effect for clicks
+        document.addEventListener('click', function(e) {
+            // Create splash element
+            const splash = document.createElement('div');
+            splash.className = 'ink-splash';
+            splash.style.left = `${e.clientX}px`;
+            splash.style.top = `${e.clientY}px`;
+            
+            // Add to container
+            document.getElementById('ink-splash-container').appendChild(splash);
+            
+            // Start animation
+            setTimeout(() => {
+                splash.classList.add('animate');
+                
+                // Remove after animation completes
+                setTimeout(() => {
+                    splash.remove();
+                }, 1000);
+            }, 10);
+        });
+        
+        // Add page transition animation
+        function pageTransition() {
+            const content = document.querySelector('main');
+            content.classList.add('page-transition', 'animate');
+            
+            setTimeout(() => {
+                content.classList.remove('animate');
+            }, 500);
+        }
+        
+        // Show conversion modal when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('conversion-modal');
+            if (modal) {
+                const closeBtn = document.getElementById('close-conversion');
+                const remindBtn = document.getElementById('remind-later');
+                
+                // Close modal when X is clicked
+                closeBtn.addEventListener('click', function() {
+                    modal.classList.add('hidden');
+                    
+                    // Mark as seen via AJAX
+                    fetch('{% url "token_management:mark_conversion_seen" %}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                });
+                
+                // Close modal when "Remind Later" is clicked
+                remindBtn.addEventListener('click', function() {
+                    modal.classList.add('hidden');
+                });
+            }
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

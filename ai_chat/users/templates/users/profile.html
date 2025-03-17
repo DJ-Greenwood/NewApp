@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Your Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Profile sidebar -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    {% if profile.avatar %}
+                        <img src="{{ profile.avatar.url }}" alt="{{ user.username }}" class="rounded-circle img-fluid mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px; font-size: 4rem;">
+                            {{ user.username.0|upper }}
+                        </div>
+                    {% endif %}
+                    
+                    <h3 class="fw-bold">{{ user.get_full_name|default:user.username }}</h3>
+                    
+                    {% if profile.location %}
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-geo-alt-fill me-1"></i> {{ profile.location }}
+                        </p>
+                    {% endif %}
+                    
+                    {% if profile.website %}
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-link-45deg me-1"></i> 
+                            <a href="{{ profile.website }}" target="_blank" rel="noopener noreferrer">{{ profile.website|cut:"https://"|cut:"http://" }}</a>
+                        </p>
+                    {% endif %}
+                    
+                    <p class="text-muted">
+                        <i class="bi bi-calendar-check me-1"></i> Joined {{ profile.date_joined|date:"F Y" }}
+                    </p>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="{% url 'edit_profile' %}" class="btn btn-primary">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Profile
+                        </a>
+                        <a href="{% url 'edit_preferences' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-gear me-1"></i> Preferences
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats card -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Activity Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-0">
+                        <div class="col-6 border-end">
+                            <div class="text-center p-3">
+                                <h3 class="fw-bold text-primary">{{ character_count }}</h3>
+                                <p class="mb-0">Characters</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3">
+                                <h3 class="fw-bold text-primary">{{ conversation_count }}</h3>
+                                <p class="mb-0">Conversations</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Token usage -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Monthly Usage</span>
+                            <span class="text-primary fw-bold">{{ token_usage.monthly_tokens_used|intcomma }}</span>
+                        </div>
+                        <div class="progress mt-1" style="height: 8px;">
+                            {% with monthly_percentage=token_usage.monthly_tokens_used|floatformat:0|default:'0'|stringformat:'s'|slice:':-3'|default:'0' %}
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ monthly_percentage }}%" aria-valuenow="{{ monthly_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            {% endwith %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Total Usage</span>
+                            <span class="text-primary fw-bold">{{ token_usage.total_tokens_used|intcomma }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'usage_stats' %}" class="btn btn-sm btn-outline-primary">View Detailed Stats</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile main content -->
+        <div class="col-md-8">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <!-- User bio -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">About</h5>
+                </div>
+                <div class="card-body">
+                    {% if profile.bio %}
+                        <p class="mb-0">{{ profile.bio|linebreaks }}</p>
+                    {% else %}
+                        <p class="text-muted mb-0">No bio yet. <a href="{% url 'edit_profile' %}">Add one now</a>.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Most active character -->
+            {% if most_active_character %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Most Active Character</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                {% if most_active_character.avatar %}
+                                    <img src="{{ most_active_character.avatar.url }}" alt="{{ most_active_character.name }}" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                        {{ most_active_character.name.0|upper }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="mb-1">{{ most_active_character.name }}</h5>
+                                <p class="mb-0 text-muted">{{ most_active_character.personality|title }} personality</p>
+                                <div class="mt-2">
+                                    <a href="{% url 'character_detail' slug=most_active_character.slug %}" class="btn btn-sm btn-outline-primary">View Character</a>
+                                    <a href="{% url 'start_conversation' character_slug=most_active_character.slug %}" class="btn btn-sm btn-primary">Start Chat</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Preferences summary -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Preferences</h5>
+                    <a href="{% url 'edit_preferences' %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6>Theme</h6>
+                            <p class="text-muted">{{ preferences.get_theme_display }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>Default AI Model</h6>
+                            <p class="text-muted">{{ preferences.get_default_ai_model_display }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>Temperature</h6>
+                            <p class="text-muted">{{ preferences.default_temperature }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>Max Tokens</h6>
+                            <p class="text-muted">{{ preferences.default_max_tokens }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

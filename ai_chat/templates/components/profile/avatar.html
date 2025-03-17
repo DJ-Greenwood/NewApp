@@ -1,0 +1,31 @@
+{% comment %}
+Usage: {% include "components/profile/avatar.html" with character=character size="large" %}
+Parameters:
+- character: Character object
+- size: Avatar size (small, medium, large) - default: medium
+- classes: Additional CSS classes (optional)
+{% endcomment %}
+
+{% if character.avatar %}
+    {% if size == "small" %}
+        <img src="{{ character.avatar.url }}" alt="{{ character.name }}" class="w-8 h-8 rounded-full object-cover {% if classes %}{{ classes }}{% endif %}">
+    {% elif size == "large" %}
+        <img src="{{ character.avatar.url }}" alt="{{ character.name }}" class="w-24 h-24 rounded-full object-cover {% if classes %}{{ classes }}{% endif %}">
+    {% else %}
+        <img src="{{ character.avatar.url }}" alt="{{ character.name }}" class="w-12 h-12 rounded-full object-cover {% if classes %}{{ classes }}{% endif %}">
+    {% endif %}
+{% else %}
+    {% if size == "small" %}
+        <div class="w-8 h-8 rounded-full bg-navy flex items-center justify-center text-white font-bold {% if classes %}{{ classes }}{% endif %}">
+            {{ character.name|slice:":1" }}
+        </div>
+    {% elif size == "large" %}
+        <div class="w-24 h-24 rounded-full bg-navy flex items-center justify-center text-white font-bold text-2xl {% if classes %}{{ classes }}{% endif %}">
+            {{ character.name|slice:":1" }}
+        </div>
+    {% else %}
+        <div class="w-12 h-12 rounded-full bg-navy flex items-center justify-center text-white font-bold {% if classes %}{{ classes }}{% endif %}">
+            {{ character.name|slice:":1" }}
+        </div>
+    {% endif %}
+{% endif %}

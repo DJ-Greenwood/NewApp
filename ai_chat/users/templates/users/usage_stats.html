@@ -1,0 +1,434 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Token Usage Statistics - MyImaginaryFriends.ai{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/usage-stats.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="page-title">Token Usage Statistics</h1>
+            <p class="text-muted">Track your AI token consumption and usage trends</p>
+        </div>
+        <div class="col-md-4 d-flex justify-content-end align-items-center">
+            <a href="{% url 'users:profile' %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Back to Profile
+            </a>
+        </div>
+    </div>
+    
+    <!-- Usage overview cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-primary-subtle">
+                            <i class="bi bi-calendar-month"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="stat-title">Monthly Usage</h6>
+                            <h3 class="stat-value">{{ monthly_stats.total_tokens|default:"0"|intcomma }}</h3>
+                            <p class="stat-description mb-0">Tokens used this month</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-success-subtle">
+                            <i class="bi bi-reception-4"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="stat-title">Total Usage</h6>
+                            <h3 class="stat-value">{{ total_tokens|default:"0"|intcomma }}</h3>
+                            <p class="stat-description mb-0">Lifetime tokens used</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-warning-subtle">
+                            <i class="bi bi-bar-chart-line"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="stat-title">Daily Average</h6>
+                            <h3 class="stat-value">{{ daily_average|default:"0"|intcomma }}</h3>
+                            <p class="stat-description mb-0">Average tokens per day</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Monthly progress -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Monthly Allocation</h5>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar {% if token_percent >= 90 %}bg-danger{% elif token_percent >= 70 %}bg-warning{% else %}bg-primary{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ token_percent }}%;" 
+                             aria-valuenow="{{ token_percent }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ token_percent }}%
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <h5 class="{% if token_percent >= 90 %}text-danger{% elif token_percent >= 70 %}text-warning{% else %}text-primary{% endif %} mb-0">
+                        {{ monthly_stats.total_tokens|default:"0"|intcomma }} / {{ token_limit|intcomma }}
+                    </h5>
+                    <small class="text-muted">Monthly token allocation</small>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-3">
+                <small class="text-muted">
+                    <i class="bi bi-calendar"></i> {{ days_remaining }} days remaining in billing period
+                </small>
+                <small class="text-muted">
+                    <i class="bi bi-coin"></i> {{ tokens_remaining|intcomma }} tokens remaining
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Usage history chart -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Usage History</h5>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-secondary active" data-period="monthly">Monthly</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-period="weekly">Weekly</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-period="daily">Daily</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="usage-chart">
+                <canvas id="usageHistoryChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Usage breakdown -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Usage by Feature</h5>
+                </div>
+                <div class="card-body">
+                    <div class="feature-usage-chart">
+                        <canvas id="featureUsageChart" height="260"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Usage by Model</h5>
+                </div>
+                <div class="card-body">
+                    <div class="model-usage-chart">
+                        <canvas id="modelUsageChart" height="260"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Detailed usage table -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Detailed Usage Log</h5>
+            <div class="input-group input-group-sm" style="width: 250px;">
+                <input type="text" class="form-control" id="usageSearchInput" placeholder="Search...">
+                <button class="btn btn-outline-secondary" type="button">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover" id="usageTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Feature</th>
+                        <th>Character</th>
+                        <th>Model</th>
+                        <th class="text-end">Tokens</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usage in usage_history %}
+                    <tr>
+                        <td>{{ usage.timestamp|date:"M d, Y H:i" }}</td>
+                        <td>{{ usage.get_feature_display }}</td>
+                        <td>
+                            {% if usage.character_id %}
+                                {% with char=usage.get_character %}
+                                    {{ char.name }}
+                                {% endwith %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ usage.metadata.model|default:"Default" }}</td>
+                        <td class="text-end">{{ usage.tokens_used|intcomma }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <p class="text-muted mb-0">No usage history yet.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if usage_history.has_other_pages %}
+        <div class="card-footer bg-white">
+            <nav aria-label="Usage history pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if usage_history.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">&laquo; First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ usage_history.previous_page_number }}">&lsaquo; Previous</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for i in usage_history.paginator.page_range %}
+                        {% if usage_history.number == i %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ i }}</span>
+                            </li>
+                        {% elif i > usage_history.number|add:'-3' and i < usage_history.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if usage_history.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ usage_history.next_page_number }}">Next &rsaquo;</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ usage_history.paginator.num_pages }}">Last &raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Usage tips -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Tips for Optimizing Token Usage</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Be concise in your prompts and questions
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Start new conversations for new topics
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Use the appropriate AI model for your needs
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Adjust max tokens setting based on your needs
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Archive old conversations to declutter
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Export important conversations for reference
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/chart.min.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sample data for charts - in production, this would come from the backend
+        const monthlyLabels = "{{ monthly_labels|safe }}";
+        const monthlyData = "{{ monthly_data|safe }}";
+        
+        // Usage History Chart
+        const historyCtx = document.getElementById('usageHistoryChart').getContext('2d');
+        const historyChart = new Chart(historyCtx, {
+            type: 'bar',
+            data: {
+                labels: monthlyLabels,
+                datasets: [{
+                    label: 'Token Usage',
+                    data: monthlyData,
+                    backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Tokens'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Feature Usage Chart
+        const featureData = JSON.parse('{{ feature_data|safe|escapejs }}');
+        const featureLabels = JSON.parse('{{ feature_labels|safe|escapejs }}');
+        
+        const featureCtx = document.getElementById('featureUsageChart').getContext('2d');
+        const featureChart = new Chart(featureCtx, {
+            type: 'doughnut',
+            data: {
+                labels: featureLabels,
+                datasets: [{
+                    data: featureData,
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(245, 158, 11, 0.7)',
+                        'rgba(239, 68, 68, 0.7)',
+                        'rgba(139, 92, 246, 0.7)',
+                        'rgba(236, 72, 153, 0.7)',
+                        'rgba(209, 213, 219, 0.7)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+        
+        // Model Usage Chart
+        const modelData = JSON.parse('{{ model_data|safe|escapejs }}');
+        const modelLabels = JSON.parse('{{ model_labels|safe|escapejs }}');
+        
+        const modelCtx = document.getElementById('modelUsageChart').getContext('2d');
+        const modelChart = new Chart(modelCtx, {
+            type: 'doughnut',
+            data: {
+                labels: modelLabels,
+                datasets: [{
+                    data: modelData,
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(245, 158, 11, 0.7)',
+                        'rgba(209, 213, 219, 0.7)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+        
+        // Period selector buttons
+        const periodButtons = document.querySelectorAll('.btn-group [data-period]');
+        periodButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                periodButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Update chart based on selected period
+                // In a real implementation, this would fetch new data from the server
+                const period = this.getAttribute('data-period');
+                
+                // This is just placeholder for demonstration
+                alert(`Would fetch ${period} data in production implementation`);
+            });
+        });
+        
+        // Search functionality for usage table
+        const searchInput = document.getElementById('usageSearchInput');
+        const usageTable = document.getElementById('usageTable');
+        
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = usageTable.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if(text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

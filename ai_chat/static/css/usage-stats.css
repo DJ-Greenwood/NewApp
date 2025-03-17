@@ -1,0 +1,84 @@
+/* usage-stats.css */
+
+/* Stat card icons */
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.bg-primary-subtle {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+}
+
+.bg-success-subtle {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+.bg-warning-subtle {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+}
+
+.stat-title {
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.stat-description {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+/* Progress bar styling */
+.progress {
+    background-color: rgba(209, 213, 219, 0.5);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Chart containers */
+.usage-chart, 
+.feature-usage-chart, 
+.model-usage-chart {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* Card badge for current plan */
+.card-badge {
+    position: absolute;
+    top: 0;
+    right: 1rem;
+    transform: translateY(-50%);
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 768px) {
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* Token pack cards */
+.position-absolute.badge {
+    z-index: 2;
+}

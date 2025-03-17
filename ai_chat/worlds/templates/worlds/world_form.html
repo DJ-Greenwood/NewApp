@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ world.name }} - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <a href="{% url 'worlds:list' %}" class="text-navy hover:text-amber transition duration-200">
+        <i class="fas fa-arrow-left mr-2"></i> Back to worlds
+    </a>
+</div>
+
+<div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture mb-8">
+    <div class="p-6">
+        <div class="flex justify-between items-start">
+            <h1 class="text-3xl font-serif font-bold text-navy mb-2">{{ world.name }}</h1>
+            
+            <div class="flex space-x-2">
+                <a href="{% url 'worlds:edit' world.id %}" class="bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-edit mr-1"></i> Edit
+                </a>
+                
+                {% if world.is_archived %}
+                <a href="{% url 'worlds:unarchive' world.id %}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-box-open mr-1"></i> Unarchive
+                </a>
+                {% else %}
+                <a href="{% url 'worlds:archive' world.id %}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-box mr-1"></i> Archive
+                </a>
+                {% endif %}
+                
+                <a href="{% url 'worlds:delete' world.id %}" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-trash-alt mr-1"></i> Delete
+                </a>
+            </div>
+        </div>
+        
+        <div class="mb-6">
+            <p class="text-navy-light mb-4">{{ world.description }}</p>
+            
+            <div class="flex flex-wrap gap-4 text-sm">
+                {% if world.genre %}
+                <div class="bg-navy-light text-white px-3 py-1 rounded-full">
+                    <i class="fas fa-bookmark mr-1"></i> {{ world.genre }}
+                </div>
+                {% endif %}
+                
+                {% if world.time_period %}
+                <div class="bg-navy-light text-white px-3 py-1 rounded-full">
+                    <i class="fas fa-clock mr-1"></i> {{ world.time_period }}
+                </div>
+                {% endif %}
+                
+                <div class="bg-navy-light text-white px-3 py-1 rounded-full">
+                    <i class="fas fa-calendar-alt mr-1"></i> Created {{ world.created_at|date:"M d, Y" }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- World content sections -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Locations section -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+        <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+            <h2 class="font-serif font-bold text-xl text-navy">Locations</h2>
+            <a href="{% url 'worlds:location_create' world.id %}" class="text-amber hover:text-amber-dark">
+                <i class="fas fa-plus"></i>
+            </a>
+        </div>
+        <div class="p-6">
+            {% if locations %}
+                <div class="space-y-4">
+                    {% for location in locations %}
+                        <div class="flex items-center">
+                            <div class="flex-grow">
+                                <a href="{% url 'worlds:location_detail' world.id location.id %}" class="font-medium hover:text-amber">
+                                    {{ location.name }}
+                                </a>
+                                {% if location.location_type %}
+                                    <div class="text-xs text-navy-light">{{ location.location_type }}</div>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'worlds:location_edit' world.id location.id %}" class="text-gray-500 hover:text-amber ml-2">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-navy-light mb-3">No locations yet</p>
+                    <a href="{% url 'worlds:location_create' world.id %}" class="text-amber hover:text-amber-dark font-medium">
+                        <i class="fas fa-plus mr-1"></i> Add first location
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Factions section -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+        <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+            <h2 class="font-serif font-bold text-xl text-navy">Factions</h2>
+            <a href="{% url 'worlds:faction_create' world.id %}" class="text-amber hover:text-amber-dark">
+                <i class="fas fa-plus"></i>
+            </a>
+        </div>
+        <div class="p-6">
+            {% if factions %}
+                <div class="space-y-4">
+                    {% for faction in factions %}
+                        <div class="flex items-center">
+                            <div class="flex-grow">
+                                <a href="{% url 'worlds:faction_detail' world.id faction.id %}" class="font-medium hover:text-amber">
+                                    {{ faction.name }}
+                                </a>
+                                {% if faction.faction_type %}
+                                    <div class="text-xs text-navy-light">{{ faction.faction_type }}</div>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'worlds:faction_edit' world.id faction.id %}" class="text-gray-500 hover:text-amber ml-2">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-navy-light mb-3">No factions yet</p>
+                    <a href="{% url 'worlds:faction_create' world.id %}" class="text-amber hover:text-amber-dark font-medium">
+                        <i class="fas fa-plus mr-1"></i> Add first faction
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Characters section -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+        <div class="px-6 py-4 border-b border-cream-dark">
+            <h2 class="font-serif font-bold text-xl text-navy">Characters</h2>
+        </div>
+        <div class="p-6">
+            {% if characters %}
+                <div class="space-y-4">
+                    {% for character in characters %}
+                        <div class="flex items-center">
+                            {% if character.avatar %}
+                                <img src="{{ character.avatar.url }}" alt="{{ character.name }}" class="w-8 h-8 rounded-full mr-3">
+                            {% else %}
+                                <div class="w-8 h-8 bg-navy rounded-full flex items-center justify-center text-white mr-3">
+                                    {{ character.name|slice:":1" }}
+                                </div>
+                            {% endif %}
+                            <div class="flex-grow">
+                                <a href="{% url 'characters:detail' character.id %}" class="font-medium hover:text-amber">
+                                    {{ character.name }}
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-navy-light mb-3">No characters in this world yet</p>
+                    <p class="text-sm text-navy-light">Add characters to locations to see them here</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <!-- Events section -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+        <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+            <h2 class="font-serif font-bold text-xl text-navy">Historical Events</h2>
+            <a href="{% url 'worlds:event_create' world.id %}" class="text-amber hover:text-amber-dark">
+                <i class="fas fa-plus"></i>
+            </a>
+        </div>
+        <div class="p-6">
+            {% if events %}
+                <div class="space-y-4">
+                    {% for event in events %}
+                        <div class="flex items-center">
+                            <div class="flex-grow">
+                                <div class="font-medium">{{ event.name }}</div>
+                                {% if event.start_date %}
+                                    <div class="text-xs text-navy-light">{{ event.start_date }}{% if event.end_date %} - {{ event.end_date }}{% endif %}</div>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'worlds:event_edit' world.id event.id %}" class="text-gray-500 hover:text-amber ml-2">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-navy-light mb-3">No events yet</p>
+                    <a href="{% url 'worlds:event_create' world.id %}" class="text-amber hover:text-amber-dark font-medium">
+                        <i class="fas fa-plus mr-1"></i> Add first event
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Cultures section -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+        <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+            <h2 class="font-serif font-bold text-xl text-navy">Cultures</h2>
+            <a href="{% url 'worlds:culture_create' world.id %}" class="text-amber hover:text-amber-dark">
+                <i class="fas fa-plus"></i>
+            </a>
+        </div>
+        <div class="p-6">
+            {% if cultures %}
+                <div class="space-y-4">
+                    {% for culture in cultures %}
+                        <div class="flex items-center">
+                            <div class="flex-grow">
+                                <div class="font-medium">{{ culture.name }}</div>
+                                {% if culture.language %}
+                                    <div class="text-xs text-navy-light">Language: {{ culture.language }}</div>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'worlds:culture_edit' world.id culture.id %}" class="text-gray-500 hover:text-amber ml-2">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-navy-light mb-3">No cultures yet</p>
+                    <a href="{% url 'worlds:culture_create' world.id %}" class="text-amber hover:text-amber-dark font-medium">
+                        <i class="fas fa-plus mr-1"></i> Add first culture
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Items and Notes sections -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Items section -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+        <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+            <h2 class="font-serif font-bold text-xl text-navy">Items</h2>
+            <a href="{% url 'worlds:item_create' world.id %}" class="text-amber hover:text-amber-dark">
+                <i class="fas fa-plus"></i>
+            </a>
+        </div>
+        <div class="p-6">
+            {% if items %}
+                <div class="space-y-4">
+                    {% for item in items %}
+                        <div class="flex items-center">
+                            <div class="flex-grow">
+                                <div class="font-medium">{{ item.name }}</div>
+                                {% if item.item_type %}
+                                    <div class="text-xs text-navy-light">{{ item.item_type }}</div>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'worlds:item_edit' world.id item.id %}" class="text-gray-500 hover:text-amber ml-2">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-navy-light mb-3">No items yet</p>
+                    <a href="{% url 'worlds:item_create' world.id %}" class="text-amber hover:text-amber-dark font-medium">
+                        <i class="fas fa-plus mr-1"></i> Add first item
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Notes section -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+        <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+            <h2 class="font-serif font-bold text-xl text-navy">Notes</h2>
+            <a href="{% url 'worlds:notes_create' world.id %}" class="text-amber hover:text-amber-dark">
+                <i class="fas fa-plus"></i>
+            </a>
+        </div>
+        <div class="p-6">
+            {% if notes %}
+                <div class="space-y-4">
+                    {% for note in notes %}
+                        <div class="flex items-center">
+                            <div class="flex-grow">
+                                <div class="font-medium">{{ note.title }}</div>
+                                <div class="text-xs text-navy-light">{{ note.get_note_type_display }}</div>
+                            </div>
+                            <a href="{% url 'worlds:notes_edit' world.id note.id %}" class="text-gray-500 hover:text-amber ml-2">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-navy-light mb-3">No notes yet</p>
+                    <a href="{% url 'worlds:notes_create' world.id %}" class="text-amber hover:text-amber-dark font-medium">
+                        <i class="fas fa-plus mr-1"></i> Add first note
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

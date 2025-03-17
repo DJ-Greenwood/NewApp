@@ -1,0 +1,14 @@
+{% comment %}
+Usage: {% include "components/headers/section_header.html" with title="Section Title" %}
+Parameters:
+- title: Section title
+- action_link: URL for action link (optional)
+- action_text: Text for action link (optional)
+{% endcomment %}
+
+<div class="{% if card_header %}px-6 py-4 border-b border-cream-dark{% else %}mb-4{% endif %} {% if action_link %}flex justify-between items-center{% endif %}">
+    <h2 class="font-serif font-bold text-xl text-navy {% if card_header %}mb-0{% endif %}">{{ title }}</h2>
+    {% if action_link %}
+    <a href="{{ action_link }}" class="text-sm text-amber hover:text-amber-dark">{{ action_text }}</a>
+    {% endif %}
+</div>

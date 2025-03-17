@@ -1,0 +1,18 @@
+# ignore env files
+.env
+/.env
+ai_chat/.env
+
+# ignore database files
+*.sqlite3
+/db.sqlite3
+
+# ignore pycache files
+__pycache__/
+*.pyc
+**/__pycache__/
+**/*.pyc
+
+# ignore .png files
+*.png
+

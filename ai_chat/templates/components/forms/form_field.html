@@ -1,0 +1,21 @@
+{% comment %}
+Usage: {% include "components/forms/form_field.html" with field=form.name label="Name" required=True %}
+Parameters:
+- field: Form field
+- label: Field label (optional, will use field.label if not provided)
+- required: Boolean to show required asterisk (default: False)
+- help_text: Help text (optional, will use field.help_text if not provided)
+{% endcomment %}
+
+<div class="mb-3">
+    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-navy mb-1">
+        {{ label|default:field.label }} {% if required %}<span class="text-red-500">*</span>{% endif %}
+    </label>
+    {{ field }}
+    {% if field.errors %}
+    <p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>
+    {% endif %}
+    {% if help_text or field.help_text %}
+    <p class="text-xs text-navy-light mt-1">{{ help_text|default:field.help_text }}</p>
+    {% endif %}
+</div>

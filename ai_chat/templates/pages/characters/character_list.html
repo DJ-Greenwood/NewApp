@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}My Characters - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+{% comment %}
+    {% include "components/headers/page_header.html" with 
+        title="My Characters" 
+        subtitle="Manage your imaginary friends and bring new ones to life." 
+        action_button='
+            <a href="{% url 'characters:create' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200 text-center">
+                <i class="fas fa-plus mr-2"></i> Create Character
+            </a>
+            <a href="{% url 'characters:generate' %}" class="inline-block bg-navy hover:bg-navy-light text-cream-light font-bold py-2 px-4 rounded-lg transition duration-200 text-center">
+                <i class="fas fa-magic mr-2"></i> AI Generation
+            </a>
+        '
+    %}
+{% endcomment %}
+
+    <!-- Character sections -->
+    <div class="space-y-8">
+        <!-- Favorite Characters -->
+        {% if favorite_characters %}
+        <div>
+            {% include "components/headers/section_header.html" with title="Favorite Characters" %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for character in favorite_characters %}
+                    {% include "components/cards/character_card.html" with character=character %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Recently Active Characters -->
+        {% if recent_characters %}
+        <div>
+            {% include "components/headers/section_header.html" with title="Recently Active" %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for character in recent_characters %}
+                    {% include "components/cards/character_card.html" with character=character %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- All Characters -->
+        <div>
+            {% include "components/headers/section_header.html" with title="All Characters" %}
+            {% if characters %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for character in characters %}
+                    {% include "components/cards/character_card.html" with character=character %}
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-white rounded-lg shadow-md p-8 text-center paper-texture">
+                <div class="w-20 h-20 bg-amber-light rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-user-plus text-3xl text-navy"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">No Characters Yet</h3>
+                <p class="text-navy-light mb-6">You haven't created any characters yet. Start by creating your first character!</p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="{% url 'characters:create' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-6 rounded-lg transition duration-200">
+                        Create Manually
+                    </a>
+                    <a href="{% url 'characters:generate' %}" class="inline-block bg-navy hover:bg-navy-light text-cream-light font-bold py-2 px-6 rounded-lg transition duration-200">
+                        AI-Assisted Generation
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

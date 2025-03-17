@@ -1,0 +1,366 @@
+{% extends 'base.html' %}
+
+{% block title %}MyImaginaryFriends.ai - Create and Chat with AI Characters{% endblock %}
+
+{% block content %}
+<!-- Hero section -->
+<div class="min-h-[80vh] flex flex-col md:flex-row items-center">
+    <!-- Hero content -->
+    <div class="w-full md:w-1/2 mb-10 md:mb-0">
+        <h1 class="text-4xl md:text-5xl font-serif font-bold text-navy leading-tight mb-6">
+            Bring Your Imaginary Friends to <span class="text-amber">Life</span>
+        </h1>
+        
+        <p class="text-lg md:text-xl mb-8 text-navy-light max-w-lg">
+            Create unique AI characters, have meaningful conversations, write stories together, and build immersive worlds.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row gap-4">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-3 px-8 rounded-lg transition duration-200 text-center">
+                    Go to Dashboard
+                </a>
+                <a href="{% url 'characters:create' %}" class="inline-block bg-navy hover:bg-navy-light text-cream-light font-bold py-3 px-8 rounded-lg transition duration-200 text-center">
+                    Create a Character
+                </a>
+            {% else %}
+                <a href="{% url 'users:signup' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-3 px-8 rounded-lg transition duration-200 text-center">
+                    Get Started
+                </a>
+                <a href="{% url 'users:login' %}" class="inline-block bg-navy hover:bg-navy-light text-cream-light font-bold py-3 px-8 rounded-lg transition duration-200 text-center">
+                    Login
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Hero image -->
+    <div class="w-full md:w-1/2 flex justify-center">
+        <div class="relative">
+            <div class="absolute inset-0 bg-amber opacity-10 rounded-full transform scale-125"></div>
+            <img src="/static/images/hero-illustration.png" alt="Character illustration" class="relative z-10 max-w-full h-auto">
+        </div>
+    </div>
+</div>
+
+<!-- Features section -->
+<div class="mt-16 mb-16">
+    <h2 class="text-3xl font-serif font-bold text-center mb-12">What You Can Do</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden paper-texture">
+            <div class="p-6">
+                <div class="w-16 h-16 bg-amber-light rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-users text-2xl text-navy"></i>
+                </div>
+                <h3 class="text-xl font-serif font-bold mb-3">Create Characters</h3>
+                <p class="text-navy-light">
+                    Bring your imagination to life by creating detailed AI characters with unique personalities, backgrounds, and voices.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Feature 2 -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden paper-texture">
+            <div class="p-6">
+                <div class="w-16 h-16 bg-amber-light rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-comments text-2xl text-navy"></i>
+                </div>
+                <h3 class="text-xl font-serif font-bold mb-3">Have Conversations</h3>
+                <p class="text-navy-light">
+                    Chat with your characters, ask them questions, seek advice, or just enjoy their company in meaningful conversations.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Feature 3 -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden paper-texture">
+            <div class="p-6">
+                <div class="w-16 h-16 bg-amber-light rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-book text-2xl text-navy"></i>
+                </div>
+                <h3 class="text-xl font-serif font-bold mb-3">Write Stories</h3>
+                <p class="text-navy-light">
+                    Collaborate with your characters to write stories, build worlds, and create immersive narratives together.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How it works section -->
+<div class="my-16">
+    <h2 class="text-3xl font-serif font-bold text-center mb-12">How It Works</h2>
+    
+    <div class="flex flex-col space-y-12">
+        <!-- Step 1 -->
+        <div class="flex flex-col md:flex-row items-center">
+            <div class="w-full md:w-1/2 mb-6 md:mb-0 md:pr-8">
+                <div class="bg-navy text-cream-light w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                    <span class="text-xl font-bold">1</span>
+                </div>
+                <h3 class="text-2xl font-serif font-bold mb-3">Create Your Character</h3>
+                <p class="text-navy-light text-lg">
+                    Start by describing your character's name, traits, and background. Our AI will help flesh out the details and bring them to life.
+                </p>
+            </div>
+            <div class="w-full md:w-1/2 bg-cream rounded-lg shadow-lg p-4">
+                <img src="/static/images/step1-illustration.png" alt="Character creation process" class="w-full h-auto rounded">
+            </div>
+        </div>
+        
+        <!-- Step 2 -->
+        <div class="flex flex-col md:flex-row-reverse items-center">
+            <div class="w-full md:w-1/2 mb-6 md:mb-0 md:pl-8">
+                <div class="bg-navy text-cream-light w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                    <span class="text-xl font-bold">2</span>
+                </div>
+                <h3 class="text-2xl font-serif font-bold mb-3">Start a Conversation</h3>
+                <p class="text-navy-light text-lg">
+                    Chat with your character in a natural, flowing conversation. They'll remember your discussions and develop their personality over time.
+                </p>
+            </div>
+            <div class="w-full md:w-1/2 bg-cream rounded-lg shadow-lg p-4">
+                <img src="/static/images/step2-illustration.png" alt="Character conversation" class="w-full h-auto rounded">
+            </div>
+        </div>
+        
+        <!-- Step 3 -->
+        <div class="flex flex-col md:flex-row items-center">
+            <div class="w-full md:w-1/2 mb-6 md:mb-0 md:pr-8">
+                <div class="bg-navy text-cream-light w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                    <span class="text-xl font-bold">3</span>
+                </div>
+                <h3 class="text-2xl font-serif font-bold mb-3">Create Together</h3>
+                <p class="text-navy-light text-lg">
+                    Write stories, build worlds, or keep a journal with your characters' help. Watch your creative universe expand with every interaction.
+                </p>
+            </div>
+            <div class="w-full md:w-1/2 bg-cream rounded-lg shadow-lg p-4">
+                <img src="/static/images/step3-illustration.png" alt="Creative collaboration" class="w-full h-auto rounded">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pricing section -->
+<div class="my-16">
+    <h2 class="text-3xl font-serif font-bold text-center mb-4">Pricing Plans</h2>
+    <p class="text-lg text-center text-navy-light mb-12 max-w-2xl mx-auto">
+        Choose the plan that works best for your creative journey. All plans include character creation, conversations, stories, and worlds.
+    </p>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Free tier -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden border-2 border-gray-100 paper-texture">
+            <div class="p-6">
+                <h3 class="text-xl font-serif font-bold mb-2">Free</h3>
+                <div class="text-3xl font-bold mb-4">$0<span class="text-base font-normal text-gray-500">/month</span></div>
+                <p class="text-navy-light mb-6">Perfect for casual users and exploration.</p>
+                
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>50,000 tokens per month</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>Up to 3 characters</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>Basic writing tools</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>Community support</span>
+                    </li>
+                </ul>
+                
+                <a href="{% url 'users:signup' %}" class="block w-full bg-navy hover:bg-navy-light text-cream-light text-center font-bold py-3 px-4 rounded-lg transition duration-200">
+                    Get Started
+                </a>
+            </div>
+        </div>
+        
+        <!-- Basic tier -->
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden border-2 border-amber-light transform scale-105 z-10 paper-texture">
+            <div class="bg-amber-light py-2 text-center text-navy font-bold">
+                MOST POPULAR
+            </div>
+            <div class="p-6">
+                <h3 class="text-xl font-serif font-bold mb-2">Basic</h3>
+                <div class="text-3xl font-bold mb-4">$19.99<span class="text-base font-normal text-gray-500">/month</span></div>
+                <p class="text-navy-light mb-6">For creative individuals with bigger ideas.</p>
+                
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>200,000 tokens per month</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>Up to 10 characters</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>Advanced writing tools</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>Priority support</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>Export capabilities</span>
+                    </li>
+                </ul>
+                
+                <a href="{% url 'users:signup' %}?plan=basic" class="block w-full bg-amber hover:bg-amber-dark text-navy text-center font-bold py-3 px-4 rounded-lg transition duration-200">
+                    Choose Basic
+                </a>
+            </div>
+        </div>
+        
+        <!-- Enterprise tier -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden border-2 border-gray-100 paper-texture">
+            <div class="p-6">
+                <h3 class="text-xl font-serif font-bold mb-2">Enterprise</h3>
+                <div class="text-3xl font-bold mb-4">$39.99<span class="text-base font-normal text-gray-500">/month</span></div>
+                <p class="text-navy-light mb-6">For serious writers and worldbuilders.</p>
+                
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>500,000 tokens per month</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>Unlimited characters</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>Professional writing tools</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>Priority support</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>Advanced export options</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                        <span>Early access to new features</span>
+                    </li>
+                </ul>
+                
+                <a href="{% url 'users:signup' %}?plan=enterprise" class="block w-full bg-navy hover:bg-navy-light text-cream-light text-center font-bold py-3 px-4 rounded-lg transition duration-200">
+                    Choose Enterprise
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Testimonials -->
+<div class="my-16 bg-cream paper-texture py-12 rounded-lg">
+    <h2 class="text-3xl font-serif font-bold text-center mb-12">What Our Users Say</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto px-4">
+        <!-- Testimonial 1 -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center mb-4">
+                <div class="text-amber">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
+            <p class="italic text-navy-light mb-4">
+                "I've created characters that feel so real, I look forward to our conversations. It's like having friends who are always there for you, with infinite patience and understanding."
+            </p>
+            <div class="flex items-center">
+                <div class="w-10 h-10 bg-navy rounded-full mr-3"></div>
+                <div>
+                    <div class="font-bold">Sarah K.</div>
+                    <div class="text-sm text-navy-light">Writer</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Testimonial 2 -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center mb-4">
+                <div class="text-amber">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
+            <p class="italic text-navy-light mb-4">
+                "As a novelist, the characters I've created here have helped me break through writer's block countless times. They offer perspectives I wouldn't have considered."
+            </p>
+            <div class="flex items-center">
+                <div class="w-10 h-10 bg-navy rounded-full mr-3"></div>
+                <div>
+                    <div class="font-bold">Michael T.</div>
+                    <div class="text-sm text-navy-light">Novelist</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Testimonial 3 -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center mb-4">
+                <div class="text-amber">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star-half-alt"></i>
+                </div>
+            </div>
+            <p class="italic text-navy-light mb-4">
+                "I've built an entire fantasy world with the help of characters I've created. The worldbuilding tools are incredible, and the characters remember everything about the universe we've built together."
+            </p>
+            <div class="flex items-center">
+                <div class="w-10 h-10 bg-navy rounded-full mr-3"></div>
+                <div>
+                    <div class="font-bold">Jamie L.</div>
+                    <div class="text-sm text-navy-light">Game Designer</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA section -->
+<div class="my-16 text-center">
+    <h2 class="text-3xl font-serif font-bold mb-6">Ready to Bring Your Characters to Life?</h2>
+    <p class="text-lg text-navy-light mb-8 max-w-2xl mx-auto">
+        Start creating your own AI characters today and explore the endless possibilities of your imagination.
+    </p>
+    
+    <div class="flex flex-col sm:flex-row justify-center gap-4">
+        {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-3 px-8 rounded-lg transition duration-200">
+                Go to Dashboard
+            </a>
+        {% else %}
+            <a href="{% url 'users:signup' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-3 px-8 rounded-lg transition duration-200">
+                Get Started for Free
+            </a>
+            <a href="#" class="inline-block border-2 border-navy hover:bg-navy hover:text-white text-navy font-bold py-3 px-8 rounded-lg transition duration-200">
+                Learn More
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

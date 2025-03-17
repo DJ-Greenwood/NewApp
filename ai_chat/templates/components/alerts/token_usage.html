@@ -1,0 +1,60 @@
+{% comment %}
+Usage: {% include "components/alerts/token_usage.html" with token_usage=token_usage token_limit=token_limit token_percent=token_percent days_until_reset=days_until_reset %}
+Parameters:
+- token_usage: Current token usage
+- token_limit: Token limit
+- token_percent: Usage percentage
+- days_until_reset: Days until token reset
+- show_alerts: Boolean to show/hide alerts (default: True)
+- is_trial: Boolean to show/hide trial info (default: False)
+{% endcomment %}
+
+<div class="bg-white rounded-lg shadow-md mb-8 paper-texture overflow-hidden">
+    <div class="px-6 py-4 border-b border-cream-dark">
+        <h2 class="font-serif font-bold text-xl text-navy">Token Usage</h2>
+        {% if is_trial %}
+        <div class="text-sm text-amber-dark">
+            Trial Period: {{ trial_days_left }} days remaining
+        </div>
+        {% endif %}
+    </div>
+    <div class="p-6">
+        <div class="flex flex-col md:flex-row items-center justify-between">
+            <div class="mb-4 md:mb-0">
+                <div class="text-sm text-navy-light mb-1">Monthly Usage</div>
+                <div class="text-2xl font-bold">{{ token_usage|default:"0" }} / {{ token_limit|default:"0" }}</div>
+                <div class="text-sm text-navy-light">Reset in {{ days_until_reset }} days</div>
+            </div>
+            
+            <div class="w-full md:w-2/3 lg:w-1/2">
+                <div class="h-6 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                        class="h-full rounded-full {% if token_percent >= 90 %}bg-red-500{% elif token_percent >= 70 %}bg-yellow-500{% else %}bg-green-500{% endif %}" 
+                        style="width: {{ token_percent }}%">
+                    </div>
+                </div>
+                <div class="flex justify-between text-xs text-navy-light mt-1">
+                    <span>0%</span>
+                    <span>{{ token_percent|floatformat:"0" }}% used</span>
+                    <span>100%</span>
+                </div>
+            </div>
+        </div>
+        
+        {% if show_alerts|default:True and token_alerts %}
+        <div class="mt-4 bg-amber-light bg-opacity-30 rounded p-3 text-sm">
+            <i class="fas fa-exclamation-circle text-amber-dark mr-2"></i>
+            You've used {{ token_percent|floatformat:"0" }}% of your monthly token allowance. 
+            <a href="{% url 'token_management:overview' %}" class="text-navy font-semibold">View details</a>
+        </div>
+        {% endif %}
+        {% if is_trial %}
+        <div class="mt-4 border-t border-cream-dark pt-4">
+            <a href="{% url 'token_management:trial_conversion' %}" class="text-amber hover:text-amber-dark flex items-center">
+                <i class="fas fa-arrow-circle-up mr-2"></i>
+                Upgrade to a paid plan for more tokens
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>

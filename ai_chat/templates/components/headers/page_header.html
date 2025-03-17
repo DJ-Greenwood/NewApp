@@ -1,0 +1,30 @@
+{% comment %}
+Usage: {% include "components/headers/page_header.html" with title="Page Title" subtitle="Page description" %}
+Parameters:
+- title: Page title
+- subtitle: Page subtitle (optional)
+- back_url: URL for back button (optional)
+- back_text: Text for back button (optional)
+- action_button: HTML content for action button (optional)
+{% endcomment %}
+
+<div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+    <div>
+        <h1 class="text-3xl font-serif font-bold text-navy {% if subtitle %}mb-2{% endif %}">{{ title }}</h1>
+        {% if subtitle %}
+        <p class="text-navy-light">{{ subtitle }}</p>
+        {% endif %}
+    </div>
+    
+    <div class="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
+        {% if back_url %}
+        <a href="{{ back_url }}" class="text-navy hover:text-amber transition duration-200">
+            <i class="fas fa-arrow-left mr-2"></i> {{ back_text|default:"Back" }}
+        </a>
+        {% endif %}
+        
+        {% if action_button %}
+            {{ action_button|safe }}
+        {% endif %}
+    </div>
+</div>

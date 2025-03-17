@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Unarchive World - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <a href="{% url 'worlds:detail' world.id %}" class="text-navy hover:text-amber transition duration-200">
+        <i class="fas fa-arrow-left mr-2"></i> Back to {{ world.name }}
+    </a>
+</div>
+
+<div class="max-w-xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+        <div class="px-6 py-4 border-b border-cream-dark">
+            <h1 class="text-2xl font-serif font-bold text-navy">Unarchive World</h1>
+        </div>
+        
+        <div class="p-6">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-box-open text-2xl text-amber"></i>
+                </div>
+                
+                <h2 class="text-lg font-bold mb-4">Are you sure you want to unarchive "{{ world.name }}"?</h2>
+                <p class="text-navy-light mb-6">Unarchiving will restore this world to your main list.</p>
+                
+                <div class="flex justify-center space-x-4">
+                    <a href="{% url 'worlds:detail' world.id %}" class="bg-gray-300 hover:bg-gray-400 text-navy font-bold py-2 px-6 rounded-lg transition duration-200">
+                        Cancel
+                    </a>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-6 rounded-lg transition duration-200">
+                            Unarchive
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
