@@ -19,7 +19,21 @@ class CustomUser(AbstractUser):
     subscription_tier = models.CharField(max_length=20, choices=SUBSCRIPTION_TIERS, default='free')
     subscription_start_date = models.DateTimeField(null=True, blank=True)
     subscription_end_date = models.DateTimeField(null=True, blank=True)
+
+    # Two-factor authentication settings
+    two_factor_enabled = models.BooleanField(default=False)
+    two_factor_secret = models.CharField(max_length=100, blank=True)
+    two_factor_backup_codes = models.TextField(blank=True)
+
     
+    # Google connection fields
+    google_connected = models.BooleanField(default=False)
+    google_id = models.CharField(max_length=255, blank=True)
+    google_email = models.EmailField(blank=True)
+    google_name = models.CharField(max_length=255, blank=True)
+    google_picture = models.URLField(blank=True)
+    google_refresh_token = models.CharField(max_length=255, blank=True)
+        
     # Settings and preferences
     preferences = models.JSONField(default=dict, blank=True)
     

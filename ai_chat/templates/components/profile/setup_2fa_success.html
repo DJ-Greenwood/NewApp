@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Two-Factor Authentication Set Up - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+    {% include "components/headers/page_header.html" with 
+        title="Two-Factor Authentication Enabled" 
+        back_url="{% url 'users:profile' %}"
+        back_text="Back to Profile"
+    %}
+
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+            <div class="px-6 py-4 border-b border-cream-dark">
+                <h3 class="font-serif font-bold text-xl text-navy">Success!</h3>
+            </div>
+            
+            <div class="p-6">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-check text-green-600 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg text-green-700">Two-Factor Authentication Enabled</h4>
+                        <p class="text-navy-light">Your account is now protected with an additional layer of security.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-amber-light bg-opacity-30 p-4 rounded-lg mb-6">
+                    <h5 class="font-bold mb-2">Your Backup Codes</h5>
+                    <p class="text-sm text-navy-light mb-3">
+                        If you lose access to your authenticator app, you can use one of these one-time backup codes to sign in:
+                    </p>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-4">
+                        {% for code in backup_codes %}
+                        <div class="bg-white p-2 rounded border border-cream-dark text-center font-mono">
+                            {{ code }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="flex justify-center">
+                        <button
+                            onclick="window.print()"
+                            class="bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200 text-sm"
+                        >
+                            <i class="fas fa-print mr-1"></i> Print Backup Codes
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="bg-navy-light bg-opacity-20 p-4 rounded-lg">
+                    <h5 class="font-bold mb-2">Important Information</h5>
+                    <ul class="text-sm space-y-2">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-600 mt-1 mr-2"></i>
+                            <span>You'll need to enter a verification code from your authenticator app each time you sign in.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-600 mt-1 mr-2"></i>
+                            <span>Keep these backup codes in a secure location. Each code can only be used once.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-600 mt-1 mr-2"></i>
+                            <span>You can disable two-factor authentication at any time from your profile settings.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 border-t border-cream-dark bg-cream-light">
+                <div class="flex justify-center">
+                    <a href="{% url 'users:profile' %}" class="bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-6 rounded-lg transition duration-200">
+                        Back to Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Warn user before leaving the page
+    window.addEventListener('beforeunload', function(e) {
+        const message = "Make sure you've saved your backup codes before leaving this page!";
+        e.returnValue = message;
+        return message;
+    });
+</script>
+{% endblock %}

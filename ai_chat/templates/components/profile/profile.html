@@ -3,10 +3,12 @@
 {% block title %}My Profile - MyImaginaryFriends.ai{% endblock %}
 
 {% block content %}
+    {% comment %}
     {% include "components/headers/page_header.html" with 
         title="My Profile" 
         subtitle="Manage your account settings and profile information"
     %}
+    {% endcomment %}
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Main profile content -->
@@ -188,7 +190,7 @@
                         <h3 class="font-serif font-bold text-xl text-navy">Privacy Settings</h3>
                     </div>
                     
-                    <form method="post" action="{% url 'users:update_privacy' %}">
+                    <form method="post" action="{% url 'users:update_profile' %}" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="p-6 space-y-4">
                             <div class="flex items-center justify-between">
@@ -324,6 +326,7 @@
             </div>
             
             <!-- Token Usage -->
+             {% comment %}
             {% include "components/alerts/token_usage.html" with 
                 token_usage=token_usage 
                 token_limit=token_limit 
@@ -332,7 +335,7 @@
                 is_trial=is_trial
                 trial_days_left=trial_days_left
             %}
-            
+            {% endcomment %}
             <!-- Stats Summary -->
             <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
                 <div class="px-6 py-4 border-b border-cream-dark">
@@ -683,177 +686,7 @@
                         {% endif %}
                     </div>
                     
-                    <!-- Facebook -->
-                    <div class="flex items-center justify-between p-3 bg-cream-light rounded-lg">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center mr-3">
-                                <i class="fab fa-facebook-f text-xl"></i>
-                            </div>
-                            <div>
-                                <div class="font-bold">Facebook</div>
-                                <div class="text-xs text-navy-light">
-                                    {% if user.facebook_connected %}
-                                        Connected as {{ user.facebook_name }}
-                                    {% else %}
-                                        Not connected
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
                         
-                        {% if user.facebook_connected %}
-                            <form method="post" action="{% url 'users:disconnect_facebook' %}">
-                                {% csrf_token %}
-                                <button type="submit" class="text-red-600 hover:text-red-800">
-                                    <i class="fas fa-unlink"></i> Disconnect
-                                </button>
-                            </form>
-                        {% else %}
-                            <a href="{% url 'users:connect_facebook' %}" class="bg-amber hover:bg-amber-dark text-navy py-1 px-3 rounded text-sm font-bold">
-                                Connect
-                            </a>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Twitter -->
-                    <div class="flex items-center justify-between p-3 bg-cream-light rounded-lg">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center mr-3">
-                                <i class="fab fa-twitter text-xl"></i>
-                            </div>
-                            <div>
-                                <div class="font-bold">Twitter</div>
-                                <div class="text-xs text-navy-light">
-                                    {% if user.twitter_connected %}
-                                        Connected as @{{ user.twitter_username }}
-                                    {% else %}
-                                        Not connected
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        {% if user.twitter_connected %}
-                            <form method="post" action="{% url 'users:disconnect_twitter' %}">
-                                {% csrf_token %}
-                                <button type="submit" class="text-red-600 hover:text-red-800">
-                                    <i class="fas fa-unlink"></i> Disconnect
-                                </button>
-                            </form>
-                        {% else %}
-                            <a href="{% url 'users:connect_twitter' %}" class="bg-amber hover:bg-amber-dark text-navy py-1 px-3 rounded text-sm font-bold">
-                                Connect
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Download Data Modal -->
-    <div id="download-data-modal" class="hidden fixed inset-0 z-50 bg-navy bg-opacity-75 flex items-center justify-center">
-        <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 paper-texture">
-            <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
-                <h3 class="font-serif font-bold text-xl text-navy">Download Your Data</h3>
-                <button 
-                    onclick="document.getElementById('download-data-modal').classList.add('hidden')"
-                    class="text-navy hover:text-amber focus:outline-none"
-                >
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="p-6">
-                <p class="text-navy-light mb-4">
-                    Select what data you'd like to download. The export will be prepared and sent to your email address.
-                </p>
-                
-                <form method="post" action="{% url 'users:request_data_export' %}">
-                    {% csrf_token %}
-                    
-                    <div class="space-y-3 mb-6">
-                        <div class="flex items-center">
-                            <input 
-                                type="checkbox" 
-                                id="export-profile" 
-                                name="export_profile" 
-                                checked
-                                class="rounded border-cream-dark text-amber focus:ring-amber"
-                            >
-                            <label for="export-profile" class="ml-2">
-                                Profile Information
-                            </label>
-                        </div>
-                        
-                        <div class="flex items-center">
-                            <input 
-                                type="checkbox" 
-                                id="export-characters" 
-                                name="export_characters" 
-                                checked
-                                class="rounded border-cream-dark text-amber focus:ring-amber"
-                            >
-                            <label for="export-characters" class="ml-2">
-                                Characters
-                            </label>
-                        </div>
-                        
-                        <div class="flex items-center">
-                            <input 
-                                type="checkbox" 
-                                id="export-conversations" 
-                                name="export_conversations" 
-                                checked
-                                class="rounded border-cream-dark text-amber focus:ring-amber"
-                            >
-                            <label for="export-conversations" class="ml-2">
-                                Conversations
-                            </label>
-                        </div>
-                        
-                        <div class="flex items-center">
-                            <input 
-                                type="checkbox" 
-                                id="export-stories" 
-                                name="export_stories" 
-                                checked
-                                class="rounded border-cream-dark text-amber focus:ring-amber"
-                            >
-                            <label for="export-stories" class="ml-2">
-                                Stories
-                            </label>
-                        </div>
-                        
-                        <div class="flex items-center">
-                            <input 
-                                type="checkbox" 
-                                id="export-worlds" 
-                                name="export_worlds" 
-                                checked
-                                class="rounded border-cream-dark text-amber focus:ring-amber"
-                            >
-                            <label for="export-worlds" class="ml-2">
-                                Worlds
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-cream-light p-4 rounded-lg text-sm text-navy-light mb-6">
-                        <p>
-                            <i class="fas fa-info-circle mr-1"></i> 
-                            Data exports are prepared within 24 hours and sent to your email address. You'll receive a secure download link once your data is ready.
-                        </p>
-                    </div>
-                    
-                    <button type="submit" class="w-full bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200">
-                        Request Data Export
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
     <!-- Delete Account Modal -->
     <div id="delete-account-modal" class="hidden fixed inset-0 z-50 bg-navy bg-opacity-75 flex items-center justify-center">
         <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 paper-texture">

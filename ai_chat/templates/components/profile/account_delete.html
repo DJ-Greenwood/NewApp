@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Deleted - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-serif font-bold text-navy">
+                <i class="fas fa-feather-alt mr-2 text-amber"></i>
+                MyImaginaryFriends
+            </h1>
+        </div>
+        
+        <div class="bg-white paper-texture rounded-lg shadow-md overflow-hidden">
+            <div class="p-8 text-center">
+                <div class="w-20 h-20 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user-slash text-red-600 text-3xl"></i>
+                </div>
+                
+                <h2 class="text-2xl font-bold text-navy mb-4">Account Deleted</h2>
+                
+                <p class="text-navy-light mb-6">
+                    Your account has been permanently deleted. All your data has been removed from our systems.
+                </p>
+                
+                <p class="text-navy-light mb-6">
+                    We're sorry to see you go. If you change your mind, you're always welcome to create a new account.
+                </p>
+                
+                <div class="mt-8">
+                    <a href="{% url 'home' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-3 px-6 rounded-lg transition duration-200">
+                        Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-8 text-sm text-navy-light">
+            <p>
+                Need help? <a href="{% url 'contact' %}" class="text-amber hover:text-amber-dark">Contact Support</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

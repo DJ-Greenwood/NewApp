@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Two-Factor Authentication - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-10">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+        <div class="px-6 py-4 border-b border-cream-dark">
+            <h3 class="font-serif font-bold text-xl text-navy text-center">Two-Factor Authentication</h3>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="p-6">
+                <div class="flex items-center justify-center mb-6">
+                    <div class="w-16 h-16 bg-amber-light rounded-full flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-2xl text-navy"></i>
+                    </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to show the backup code form and hide the regular code form
+    function showBackupCodeForm() {
+        document.getElementById('backup-code-form').classList.remove('hidden');
+        document.getElementById('backup-code').focus();
+        
+        // Change the button text
+        const button = document.querySelector('button[onclick="showBackupCodeForm()"]');
+        button.innerHTML = '<i class="fas fa-mobile-alt mr-1"></i> Use authenticator app';
+        button.setAttribute('onclick', 'showAuthenticatorForm()');
+    }
+    
+    // Function to show the authenticator code form and hide the backup code form
+    function showAuthenticatorForm() {
+        document.getElementById('backup-code-form').classList.add('hidden');
+        document.querySelector('input[name="verification_code"]').focus();
+        
+        // Change the button text back
+        const button = document.querySelector('button[onclick="showAuthenticatorForm()"]');
+        button.innerHTML = '<i class="fas fa-key mr-1"></i> Use backup code instead';
+        button.setAttribute('onclick', 'showBackupCodeForm()');
+    }
+    
+    // Auto-focus the code input
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('input[name="verification_code"]').focus();
+    });
+</script>
+{% endblock %}
+                </div>
+                
+                <h4 class="font-bold text-center mb-4">Verification Required</h4>
+                <p class="text-navy-light text-center mb-6">
+                    Please enter the verification code from your authenticator app.
+                </p>
+                
+                {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                    <div class="py-2 px-3 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-700{% elif message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-amber-light bg-opacity-30 text-navy{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div>
+                    <input 
+                        type="text" 
+                        name="verification_code" 
+                        class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber text-center tracking-widest font-mono text-2xl py-3"
+                        placeholder="123456"
+                        maxlength="6"
+                        pattern="[0-9]{6}"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        required
+                        autofocus
+                    >
+                    <p class="text-xs text-navy-light text-center mt-2">
+                        Enter 6-digit code from your authenticator app
+                    </p>
+                </div>
+                
+                <div class="text-center mt-6">
+                    <button type="submit" class="bg-amber hover:bg-amber-dark text-navy font-bold py-3 px-6 rounded-lg transition duration-200 w-full">
+                        Verify
+                    </button>
+                </div>
+                
+                <div class="mt-6 pt-6 border-t border-cream-dark text-center">
+                    <button type="button" class="text-amber hover:text-amber-dark text-sm" onclick="showBackupCodeForm()">
+                        <i class="fas fa-key mr-1"></i> Use backup code instead
+                    </button>
+                </div>
+                
+                <!-- Backup code form (hidden by default) -->
+                <div id="backup-code-form" class="hidden mt-4">
+                    <label for="backup-code" class="block text-sm font-medium text-navy mb-1">
+                        Backup Code
+                    </label>
+                    <input 
+                        type="text" 
+                        id="backup-code" 
+                        name="verification_code" 
+                        class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber font-mono"
+                        placeholder="Enter backup code"
+                    >
+                    <p class="text-xs text-navy-light mt-1">
+                        Enter one of the backup codes you saved when setting up 2FA.
+                    </p>
+                </div>

@@ -157,3 +157,19 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@myimaginaryfriends
 
 # For development, you can use the console backend which prints emails to the console
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Add these settings to your settings.py file
+
+# Google OAuth Settings
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+
+# You'll need to obtain these credentials from the Google Cloud Console
+# 1. Go to https://console.cloud.google.com/
+# 2. Create a new project (or select an existing one)
+# 3. Navigate to "APIs & Services" > "Credentials"
+# 4. Click "Create Credentials" > "OAuth client ID"
+# 5. Set the application type to "Web application"
+# 6. Add authorized redirect URIs (e.g., http://localhost:8000/users/connect/google/callback/)
+# 7. Create the client ID and secret
+# 8. Set them as environment variables or add them directly here (not recommended for production)
