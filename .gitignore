@@ -16,3 +16,6 @@ __pycache__/
 # ignore .png files
 *.png
 
+# directory information
+d.py
+directory_report.csv

@@ -108,23 +108,6 @@
         .token-meter-fill.critical {
             background: linear-gradient(90deg, #FC8181 0%, #C53030 100%);
         }
-        
-        /* Line clamp for multi-line text truncation */
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        .line-clamp-3 {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
     </style>
     
     <!-- Alpine.js for UI interactions -->
@@ -154,20 +137,57 @@
                 {% endif %}
             </nav>
             
+            {% if show_conversion and is_trial %}
+            <div id="conversion-modal" class="fixed inset-0 bg-navy bg-opacity-70 flex items-center justify-center z-50">
+                <div class="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4">
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 class="text-2xl font-serif font-bold text-navy">Your Free Trial is Ending Soon!</h2>
+                        <button id="close-conversion" class="text-gray-500 hover:text-navy">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <p class="text-navy-light mb-4">
+                            You have <span class="font-bold text-amber">{{ trial_days_left }} days</span> left in your free trial. 
+                            Don't lose access to your characters and conversations!
+                        </p>
+                        
+                        <div class="bg-cream-light p-4 rounded-lg mb-4">
+                            <h3 class="font-bold mb-2">Your Trial Usage</h3>
+                            <ul class="space-y-1 text-sm">
+                                <li>Tokens Used: <span class="font-medium">{{ token_usage }}</span></li>
+                                <!-- Add other usage stats here -->
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="{% url 'token_management:trial_conversion' %}" 
+                           class="bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200 text-center flex-1">
+                            Upgrade Now
+                        </a>
+                        <button id="remind-later" 
+                                class="border border-navy hover:bg-navy hover:text-white text-navy font-bold py-2 px-4 rounded-lg transition duration-200 flex-1">
+                            Remind Me Later
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
             {% if user.is_authenticated %}
             <div class="flex items-center space-x-5">
-                <!-- Token usage card -->
-                {% comment %}
-                    {include "components/alerts/token_usage.html" with token_usage=token_usage token_limit=token_limit token_percent=token_percent days_until_reset=days_until_reset %}
-                {% endcomment %}
-               
+                <!-- Insert token usage card -->
+                {% include 'components/alerts/token_usage_small.html' %}
+                
                 <!-- User menu dropdown -->
                 <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="flex items-center text-cream-light focus:outline-none">
+                    <button @click="open = !open" class="flex items-right text-cream-light focus:outline-none">
                         <span class="hidden md:inline-block mr-1">{{ user.username }}</span>
                         <img src="{% if user.profile_picture and user.profile_picture.url %}{{ user.profile_picture.url }}{% else %}/static/images/default_avatar.png{% endif %}" 
                              alt="{{ user.username }}" 
-                             class="h-8 w-8 rounded-full border-2 border-cream-light object-cover">
+                             class="h-8 w-8 rounded-full border-2 border-cream-light">
                     </button>
                     
                     <div x-show="open" 
@@ -215,46 +235,6 @@
         </div>
     </header>
     
-    <!-- Trial conversion modal -->
-    {% if show_conversion and is_trial %}
-    <div id="conversion-modal" class="fixed inset-0 bg-navy bg-opacity-70 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4">
-            <div class="flex justify-between items-start mb-4">
-                <h2 class="text-2xl font-serif font-bold text-navy">Your Free Trial is Ending Soon!</h2>
-                <button id="close-conversion" class="text-gray-500 hover:text-navy">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="mb-6">
-                <p class="text-navy-light mb-4">
-                    You have <span class="font-bold text-amber">{{ trial_days_left }} days</span> left in your free trial. 
-                    Don't lose access to your characters and conversations!
-                </p>
-                
-                <div class="bg-cream-light p-4 rounded-lg mb-4">
-                    <h3 class="font-bold mb-2">Your Trial Usage</h3>
-                    <ul class="space-y-1 text-sm">
-                        <li>Tokens Used: <span class="font-medium">{{ token_usage }}</span></li>
-                        <!-- Add other usage stats here -->
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="flex flex-col sm:flex-row gap-4">
-                <a href="{% url 'token_management:trial_conversion' %}" 
-                   class="bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200 text-center flex-1">
-                    Upgrade Now
-                </a>
-                <button id="remind-later" 
-                        class="border border-navy hover:bg-navy hover:text-white text-navy font-bold py-2 px-4 rounded-lg transition duration-200 flex-1">
-                    Remind Me Later
-                </button>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-    
     <!-- Alert messages -->
     {% if messages %}
     <div class="container mx-auto px-4 py-4">
@@ -289,10 +269,10 @@
                     <div>
                         <h4 class="text-amber font-semibold mb-3">Features</h4>
                         <ul class="space-y-2 text-sm">
-                            <li><a href="{% url 'characters:list' %}" class="text-cream-dark hover:text-amber transition duration-200">Characters</a></li>
-                            <li><a href="{% url 'conversations:list' %}" class="text-cream-dark hover:text-amber transition duration-200">Conversations</a></li>
-                            <li><a href="{% url 'stories:list' %}" class="text-cream-dark hover:text-amber transition duration-200">Stories</a></li>
-                            <li><a href="{% url 'worlds:list' %}" class="text-cream-dark hover:text-amber transition duration-200">Worlds</a></li>
+                            <li><a href="#" class="text-cream-dark hover:text-amber transition duration-200">Characters</a></li>
+                            <li><a href="#" class="text-cream-dark hover:text-amber transition duration-200">Conversations</a></li>
+                            <li><a href="#" class="text-cream-dark hover:text-amber transition duration-200">Stories</a></li>
+                            <li><a href="#" class="text-cream-dark hover:text-amber transition duration-200">Worlds</a></li>
                         </ul>
                     </div>
                     
@@ -364,29 +344,27 @@
         // Show conversion modal when page loads
         document.addEventListener('DOMContentLoaded', function() {
             const modal = document.getElementById('conversion-modal');
-            if (modal) {
-                const closeBtn = document.getElementById('close-conversion');
-                const remindBtn = document.getElementById('remind-later');
+            const closeBtn = document.getElementById('close-conversion');
+            const remindBtn = document.getElementById('remind-later');
+            
+            // Close modal when X is clicked
+            closeBtn.addEventListener('click', function() {
+                modal.classList.add('hidden');
                 
-                // Close modal when X is clicked
-                closeBtn.addEventListener('click', function() {
-                    modal.classList.add('hidden');
-                    
-                    // Mark as seen via AJAX
-                    fetch('{% url "token_management:mark_conversion_seen" %}', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}',
-                            'Content-Type': 'application/json'
-                        }
-                    });
+                // Mark as seen via AJAX
+                fetch('{% url "token_management:mark_conversion_seen" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
                 });
-                
-                // Close modal when "Remind Later" is clicked
-                remindBtn.addEventListener('click', function() {
-                    modal.classList.add('hidden');
-                });
-            }
+            });
+            
+            // Close modal when "Remind Later" is clicked
+            remindBtn.addEventListener('click', function() {
+                modal.classList.add('hidden');
+            });
         });
     </script>
     

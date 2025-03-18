@@ -1,0 +1,17 @@
+
+{% comment %}
+Usage: {% include "components/alerts/token_usage.html" with token_usage=token_usage token_limit=token_limit token_percent=token_percent %}
+Parameters:
+- token_usage: Current token usage
+- token_limit: Token limit
+- token_percent: Usage percentage
+{% endcomment %}
+
+<div class="flex items-center space-x-2">
+    <span class="text-cream-light text-sm font-medium">Token Usage:</span>
+    <div class="token-meter w-32">
+        <div class="token-meter-fill {% if token_percent > 90 %}critical{% elif token_percent > 75 %}high{% endif %}" 
+             style="width: {{ token_percent }}%"></div>
+    </div>
+    <span class="text-cream-light text-sm font-medium">{{ token_usage|floatformat:0 }}/{{ token_limit|floatformat:0 }}</span>
+</div>

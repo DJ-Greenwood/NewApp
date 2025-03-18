@@ -16,6 +16,3 @@ __pycache__/
 # ignore .png files
 *.png
 
-
-d.py
-directory_repot.csv

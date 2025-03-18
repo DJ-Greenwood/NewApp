@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+
+{% block title %}Conversation with {{ character.name }} - MyImaginaryFriends.ai{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Custom scrollbar for chat */
+    .chat-container::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .chat-container::-webkit-scrollbar-track {
+        background-color: #F9F2DC;
+        border-radius: 4px;
+    }
+    
+    .chat-container::-webkit-scrollbar-thumb {
+        background-color: #D69E21;
+        border-radius: 4px;
+    }
+    
+    /* Message bubbles */
+    .message-user {
+        background-color: #102A43;
+        color: #F9F2DC;
+        border-radius: 16px 16px 0 16px;
+    }
+    
+    .message-character {
+        background-color: #FFF8E8;
+        color: #102A43;
+        border-radius: 16px 16px 16px 0;
+        border: 1px solid #E6D9B8;
+    }
+    
+    /* Typing indicator */
+    .typing-indicator span {
+        width: 8px;
+        height: 8px;
+        background-color: #F4B740;
+        border-radius: 50%;
+        display: inline-block;
+        margin: 0 1px;
+        animation: typing 1.4s infinite ease-in-out;
+    }
+    
+    .typing-indicator span:nth-child(1) {
+        animation-delay: 0s;
+    }
+    
+    .typing-indicator span:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    
+    .typing-indicator span:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+    
+    @keyframes typing {
+        0%, 60%, 100% {
+            transform: translateY(0);
+        }
+        30% {
+            transform: translateY(-5px);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- Conversation container with full height -->
+    <div class="flex flex-col h-[calc(100vh-160px)]">
+        <!-- Conversation header -->
+        <div class="bg-white shadow-md rounded-lg paper-texture flex items-center justify-between px-4 py-3 mb-4">
+            <div class="flex items-center">
+                <a href="{% url 'characters:detail' character.id %}" class="mr-4">
+                    {% include "components/profile/avatar.html" with character=character size="medium" %}
+                </a>
+                <div>
+                    <h1 class="font-bold text-navy text-lg">{{ character.name }}</h1>
+                    <div class="text-navy-light text-sm">
+                        {% if conversation.title %}
+                            {{ conversation.title }}
+                        {% else %}
+                            Conversation started {{ conversation.created_at|date:"M d, Y" }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action buttons -->
+            <div class="flex space-x-2">
+                <button
+                    onclick="document.getElementById('conversation-settings').classList.toggle('hidden')"
+                    class="text-navy hover:text-amber transition duration-200 p-2"
+                    title="Conversation Settings"
+                >
+                    <i class="fas fa-cog"></i>
+                </button>
+                
+                <button 
+                    onclick="document.getElementById('export-modal').classList.remove('hidden')"
+                    class="text-navy hover:text-amber transition duration-200 p-2"
+                    title="Export Conversation"
+                >
+                    <i class="fas fa-download"></i>
+                </button>
+                
+                <a href="{% url 'conversations:list' %}" class="text-navy hover:text-amber transition duration-200 p-2" title="Back to Conversations">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Conversation settings panel (hidden by default) -->
+        <div id="conversation-settings" class="hidden bg-white shadow-md rounded-lg paper-texture p-4 mb-4">
+            <h3 class="font-bold text-navy mb-3">Conversation Settings</h3>
+            
+            <form method="post" action="{% url 'conversations:update_settings' conversation.id %}">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="conversation-title" class="block text-sm font-medium text-navy mb-1">
+                            Conversation Title
+                        </label>
+                        <input 
+                            type="text" 
+                            id="conversation-title" 
+                            name="title" 
+                            value="{{ conversation.title }}" 
+                            class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                        >
+                    </div>
+                    
+                    <div>
+                        <label for="memory-depth" class="block text-sm font-medium text-navy mb-1">
+                            Memory Depth
+                        </label>
+                        <select 
+                            id="memory-depth" 
+                            name="memory_depth" 
+                            class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                        >
+                            <option value="10" {% if conversation.memory_depth == 10 %}selected{% endif %}>Short (10 messages)</option>
+                            <option value="20" {% if conversation.memory_depth == 20 %}selected{% endif %}>Medium (20 messages)</option>
+                            <option value="50" {% if conversation.memory_depth == 50 %}selected{% endif %}>Long (50 messages)</option>
+                            <option value="100" {% if conversation.memory_depth == 100 %}selected{% endif %}>Full History (100 messages)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input 
+                            type="checkbox" 
+                            id="is-favorite" 
+                            name="is_favorite" 
+                            {% if conversation.is_favorite %}checked{% endif %}
+                            class="rounded border-cream-dark text-amber focus:ring-amber"
+                        >
+                        <label for="is-favorite" class="ml-2 text-sm text-navy">
+                            Add to favorites
+                        </label>
+                    </div>
+                    
+                    <div>
+                        <button 
+                            type="button"
+                            onclick="document.getElementById('conversation-settings').classList.add('hidden')"
+                            class="bg-gray-300 hover:bg-gray-400 text-navy font-bold py-2 px-4 rounded-lg transition duration-200 mr-2 text-sm"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            type="submit"
+                            class="bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200 text-sm"
+                        >
+                            Save Settings
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Chat container -->
+        <div class="flex-grow overflow-y-auto mb-4 chat-container" id="chat-container">
+            <div class="space-y-4 p-2">
+                {% for message in messages %}
+                    <div class="flex {% if message.sender_type == 'user' %}justify-end{% endif %}">
+                        <div class="max-w-3/4 {% if message.sender_type == 'user' %}message-user{% else %}message-character{% endif %} p-4 shadow-sm">
+                            <div class="prose text-current">
+                                {{ message.content|linebreaks }}
+                            </div>
+                            <div class="text-xs mt-2 opacity-70 flex justify-between">
+                                <span>{{ message.created_at|date:"g:i A" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <!-- Welcome message -->
+                    <div class="flex">
+                        <div class="max-w-3/4 message-character p-4 shadow-sm">
+                            <div class="prose text-current">
+                                <p>Hello! I'm {{ character.name }}. I'm so excited to chat with you!</p>
+                                <p>What would you like to talk about today?</p>
+                            </div>
+                            <div class="text-xs mt-2 opacity-70">
+                                Just now
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                
+                <!-- Typing indicator (hidden by default) -->
+                <div id="typing-indicator" class="flex hidden">
+                    <div class="max-w-3/4 message-character p-3 shadow-sm">
+                        <div class="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Message input -->
+        <div class="bg-white rounded-lg shadow-md paper-texture p-4">
+            <form id="message-form" method="post" action="{% url 'conversations:send_message' conversation.id %}">
+                {% csrf_token %}
+                <div class="flex items-end space-x-2">
+                    <div class="flex-grow">
+                        <textarea 
+                            id="message-input"
+                            name="message" 
+                            rows="2"
+                            placeholder="Type your message..."
+                            class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber resize-none"
+                            required
+                        ></textarea>
+                    </div>
+                    <div>
+                        <button 
+                            type="submit"
+                            class="bg-amber hover:bg-amber-dark text-navy font-bold py-3 px-4 rounded-lg transition duration-200"
+                        >
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center mt-2 text-xs text-navy-light">
+                    <div>
+                        <span id="token-count">0</span> tokens used in this message
+                    </div>
+                    <div class="flex items-center">
+                        <button 
+                            type="button"
+                            class="text-navy hover:text-amber transition duration-200 p-1"
+                            title="Regenerate Last Response"
+                        >
+                            <i class="fas fa-redo-alt"></i>
+                        </button>
+                        <button 
+                            type="button"

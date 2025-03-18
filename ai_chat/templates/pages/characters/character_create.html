@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Create a Character - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+    {% include "components/headers/page_header.html" with 
+        title="Create a Character" 
+        subtitle="Bring a new imaginary friend to life" 
+        back_url="{% url 'characters:list' %}"
+    %}
+
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md paper-texture overflow-hidden">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="p-6">
+                    <div class="mb-8">
+                        <h3 class="text-xl font-serif font-bold mb-4">Basic Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {% include "components/forms/form_field.html" with field=form.name label="Character Name" required=True %}
+                            {% include "components/forms/form_field.html" with field=form.age label="Age" %}
+                        </div>
+                        
+                        <div class="mt-4">
+                            {% include "components/forms/form_field.html" with field=form.avatar label="Character Avatar" help_text="Upload an image to represent your character (optional)." %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h3 class="text-xl font-serif font-bold mb-4">Personality & Background</h3>
+                        
+                        {% include "components/forms/form_field.html" with field=form.description label="Short Description" required=True help_text="A brief summary of who this character is (1-2 sentences)." %}
+                        
+                        {% include "components/forms/form_field.html" with field=form.personality label="Personality" required=True help_text="Describe their personality traits, values, and how they typically interact with others." %}
+                        
+                        {% include "components/forms/form_field.html" with field=form.background label="Background Story" help_text="Share the character's history, important life events, and context that shapes who they are." %}
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h3 class="text-xl font-serif font-bold mb-4">Voice & Communication</h3>
+                        
+                        {% include "components/forms/form_field.html" with field=form.speaking_style label="Speaking Style" help_text="How does this character talk? Do they use specific phrases, have an accent, or communicate in a particular way?" %}
+                        
+                        {% include "components/forms/form_field.html" with field=form.knowledge label="Knowledge & Expertise" help_text="What subjects does this character know about? What are they an expert in?" %}
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-serif font-bold mb-4">Advanced Settings</h3>
+                        
+                        {% include "components/forms/form_field.html" with field=form.is_favorite label="Favorite Character" help_text="Add this character to your favorites for easy access." %}
+                        
+                        {% include "components/forms/form_field.html" with field=form.system_prompt label="Custom Instructions (Advanced)" help_text="Add specific guidance for how the AI should portray this character. Leave blank to use the default." %}
+                    </div>
+                </div>
+                
+                <div class="px-6 py-4 bg-cream-light border-t border-cream-dark flex justify-between">
+                    <a href="{% url 'characters:list' %}" class="bg-white border border-navy hover:bg-navy hover:text-white text-navy font-bold py-2 px-6 rounded-lg transition duration-200">
+                        Cancel
+                    </a>
+                    
+                    <div>
+                        <button type="submit" name="generate_sample" class="bg-navy hover:bg-navy-light text-cream-light font-bold py-2 px-4 rounded-lg transition duration-200 mr-2">
+                            <i class="fas fa-magic mr-1"></i> Use AI to Help
+                        </button>
+                        <button type="submit" class="bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-6 rounded-lg transition duration-200">
+                            Create Character
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="mt-8 bg-cream paper-texture rounded-lg p-6">
+            <h3 class="text-xl font-serif font-bold mb-4">Tips for Creating Memorable Characters</h3>
+            
+            <ul class="space-y-3">
+                <li class="flex items-start">
+                    <i class="fas fa-pen-fancy text-amber mt-1 mr-3"></i>
+                    <div>
+                        <p class="font-bold">Be specific and detailed</p>
+                        <p class="text-sm text-navy-light">The more details you provide about your character's personality, quirks, and background, the more authentic they'll feel.</p>
+                    </div>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-brain text-amber mt-1 mr-3"></i>
+                    <div>
+                        <p class="font-bold">Give them flaws and strengths</p>
+                        <p class="text-sm text-navy-light">Well-rounded characters have both positive traits and weaknesses that make them more relatable and interesting.</p>
+                    </div>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-comment-dots text-amber mt-1 mr-3"></i>
+                    <div>
+                        <p class="font-bold">Consider their unique voice</p>
+                        <p class="text-sm text-navy-light">How a character speaks—their vocabulary, catchphrases, or speech patterns—can bring them to life in conversations.</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+{% endblock %}

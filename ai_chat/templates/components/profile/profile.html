@@ -1,0 +1,936 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+    {% include "components/headers/page_header.html" with 
+        title="My Profile" 
+        subtitle="Manage your account settings and profile information"
+    %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main profile content -->
+        <div class="lg:col-span-2">
+            <div class="space-y-8">
+                <!-- Profile Information -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                    <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                        <h3 class="font-serif font-bold text-xl text-navy">Profile Information</h3>
+                        <button onclick="document.getElementById('edit-profile-modal').classList.remove('hidden')" class="text-amber hover:text-amber-dark">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex flex-col md:flex-row">
+                            <div class="md:w-1/3 mb-6 md:mb-0 flex justify-center">
+                                <div class="relative">
+                                    {% if user.profile_picture %}
+                                    <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="w-32 h-32 rounded-full object-cover border-4 border-cream-light">
+                                    {% else %}
+                                    <div class="w-32 h-32 rounded-full bg-navy flex items-center justify-center text-cream-light text-4xl font-bold">
+                                        {{ user.username|slice:":1" }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="md:w-2/3">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <div class="text-sm text-navy-light">Username</div>
+                                        <div class="font-bold">{{ user.username }}</div>
+                                    </div>
+                                    
+                                    <div>
+                                        <div class="text-sm text-navy-light">Email</div>
+                                        <div>{{ user.email }}</div>
+                                    </div>
+                                    
+                                    <div>
+                                        <div class="text-sm text-navy-light">Full Name</div>
+                                        <div>{{ user.get_full_name|default:"Not provided" }}</div>
+                                    </div>
+                                    
+                                    <div>
+                                        <div class="text-sm text-navy-light">Member Since</div>
+                                        <div>{{ user.date_joined|date:"F j, Y" }}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <div class="text-sm text-navy-light">Bio</div>
+                                    <div>{{ user.bio|default:"No bio provided."|linebreaks }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Account Security -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                    <div class="px-6 py-4 border-b border-cream-dark">
+                        <h3 class="font-serif font-bold text-xl text-navy">Account Security</h3>
+                    </div>
+                    
+                    <div class="p-6 space-y-6">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold mb-1">Password</h4>
+                                <p class="text-sm text-navy-light">
+                                    Last changed: {{ user.password_last_changed|date:"F j, Y"|default:"Never" }}
+                                </p>
+                            </div>
+                            <button onclick="document.getElementById('change-password-modal').classList.remove('hidden')" class="bg-amber hover:bg-amber-dark text-navy py-2 px-4 rounded-lg text-sm font-bold">
+                                Change Password
+                            </button>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold mb-1">Two-Factor Authentication</h4>
+                                <p class="text-sm text-navy-light">
+                                    Status: {% if user.two_factor_enabled %}Enabled{% else %}Disabled{% endif %}
+                                </p>
+                            </div>
+                            <button onclick="document.getElementById('two-factor-modal').classList.remove('hidden')" class="bg-cream-light hover:bg-cream text-navy py-2 px-4 rounded-lg text-sm font-bold">
+                                {% if user.two_factor_enabled %}Manage 2FA{% else %}Enable 2FA{% endif %}
+                            </button>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold mb-1">Connected Accounts</h4>
+                                <p class="text-sm text-navy-light">
+                                    Manage third-party account connections
+                                </p>
+                            </div>
+                            <button onclick="document.getElementById('connected-accounts-modal').classList.remove('hidden')" class="bg-cream-light hover:bg-cream text-navy py-2 px-4 rounded-lg text-sm font-bold">
+                                Manage Connections
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notification Preferences -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                    <div class="px-6 py-4 border-b border-cream-dark">
+                        <h3 class="font-serif font-bold text-xl text-navy">Notification Preferences</h3>
+                    </div>
+                    
+                    <form method="post" action="{% url 'users:update_notifications' %}">
+                        {% csrf_token %}
+                        <div class="p-6 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-bold">Email Notifications</h4>
+                                    <p class="text-sm text-navy-light">
+                                        Receive email updates about your account
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="email_notifications" class="sr-only peer" {% if user.email_notifications %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-bold">New Character Responses</h4>
+                                    <p class="text-sm text-navy-light">
+                                        Receive notifications when characters respond
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="character_notifications" class="sr-only peer" {% if user.character_notifications %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-bold">Story Updates</h4>
+                                    <p class="text-sm text-navy-light">
+                                        Receive notifications for collaborative story changes
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="story_notifications" class="sr-only peer" {% if user.story_notifications %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-bold">Marketing Communications</h4>
+                                    <p class="text-sm text-navy-light">
+                                        Receive updates about new features and promotions
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="marketing_notifications" class="sr-only peer" {% if user.marketing_notifications %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="pt-4 border-t border-cream-dark">
+                                <button type="submit" class="bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200 text-sm">
+                                    Save Preferences
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Privacy Settings -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                    <div class="px-6 py-4 border-b border-cream-dark">
+                        <h3 class="font-serif font-bold text-xl text-navy">Privacy Settings</h3>
+                    </div>
+                    
+                    <form method="post" action="{% url 'users:update_privacy' %}">
+                        {% csrf_token %}
+                        <div class="p-6 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-bold">Public Profile</h4>
+                                    <p class="text-sm text-navy-light">
+                                        Allow others to view your public profile
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="public_profile" class="sr-only peer" {% if user.public_profile %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-bold">Show My Characters</h4>
+                                    <p class="text-sm text-navy-light">
+                                        Allow others to see your public characters
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="show_characters" class="sr-only peer" {% if user.show_characters %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-bold">Show My Stories</h4>
+                                    <p class="text-sm text-navy-light">
+                                        Allow others to see your featured stories
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="show_stories" class="sr-only peer" {% if user.show_stories %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="pt-4 border-t border-cream-dark">
+                                <button type="submit" class="bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200 text-sm">
+                                    Save Privacy Settings
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Data Management -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                    <div class="px-6 py-4 border-b border-cream-dark">
+                        <h3 class="font-serif font-bold text-xl text-navy">Data Management</h3>
+                    </div>
+                    
+                    <div class="p-6 space-y-6">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold mb-1">Download Your Data</h4>
+                                <p class="text-sm text-navy-light">
+                                    Get a copy of all your data including characters, conversations, and stories
+                                </p>
+                            </div>
+                            <button onclick="document.getElementById('download-data-modal').classList.remove('hidden')" class="bg-cream-light hover:bg-cream text-navy py-2 px-4 rounded-lg text-sm font-bold">
+                                Request Data
+                            </button>
+                        </div>
+                        
+                        <div class="flex justify-between items-center pt-4 border-t border-cream-dark">
+                            <div>
+                                <h4 class="font-bold mb-1 text-red-600">Delete Account</h4>
+                                <p class="text-sm text-navy-light">
+                                    Permanently delete your account and all associated data
+                                </p>
+                            </div>
+                            <button onclick="document.getElementById('delete-account-modal').classList.remove('hidden')" class="bg-red-100 text-red-700 hover:bg-red-200 py-2 px-4 rounded-lg text-sm font-bold">
+                                Delete Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right sidebar -->
+        <div class="lg:col-span-1">
+            <!-- Subscription Info -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture mb-8">
+                <div class="px-6 py-4 border-b border-cream-dark">
+                    <h3 class="font-serif font-bold text-xl text-navy">Subscription</h3>
+                </div>
+                
+                <div class="p-6">
+                    <div class="mb-4">
+                        <div class="text-sm text-navy-light">Current Plan</div>
+                        <div class="text-xl font-bold">
+                            {% if user.subscription_plan == 'free' %}
+                                Free Plan
+                            {% elif user.subscription_plan == 'basic' %}
+                                Basic Plan
+                            {% elif user.subscription_plan == 'enterprise' %}
+                                Enterprise Plan
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="text-sm text-navy-light">Status</div>
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 rounded-full {% if user.subscription_active %}bg-green-500{% else %}bg-red-500{% endif %} mr-2"></span>
+                            <span>{{ user.subscription_active|yesno:"Active,Inactive" }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if user.subscription_expires %}
+                    <div class="mb-4">
+                        <div class="text-sm text-navy-light">Next Billing Date</div>
+                        <div>{{ user.subscription_expires|date:"F j, Y" }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="pt-4 border-t border-cream-dark">
+                        <a href="{% url 'users:subscription' %}" class="block w-full bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200 text-center text-sm">
+                            {% if user.subscription_plan == 'free' %}
+                                Upgrade Plan
+                            {% else %}
+                                Manage Subscription
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Token Usage -->
+            {% include "components/alerts/token_usage.html" with 
+                token_usage=token_usage 
+                token_limit=token_limit 
+                token_percent=token_percent 
+                days_until_reset=days_until_reset 
+                is_trial=is_trial
+                trial_days_left=trial_days_left
+            %}
+            
+            <!-- Stats Summary -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                <div class="px-6 py-4 border-b border-cream-dark">
+                    <h3 class="font-serif font-bold text-xl text-navy">Activity Summary</h3>
+                </div>
+                
+                <div class="p-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-cream-light p-4 rounded-lg text-center">
+                            <div class="text-3xl font-bold text-navy">{{ user.character_count }}</div>
+                            <div class="text-sm text-navy-light">Characters</div>
+                        </div>
+                        <div class="bg-cream-light p-4 rounded-lg text-center">
+                            <div class="text-3xl font-bold text-navy">{{ user.conversation_count }}</div>
+                            <div class="text-sm text-navy-light">Conversations</div>
+                        </div>
+                        <div class="bg-cream-light p-4 rounded-lg text-center">
+                            <div class="text-3xl font-bold text-navy">{{ user.story_count }}</div>
+                            <div class="text-sm text-navy-light">Stories</div>
+                        </div>
+                        <div class="bg-cream-light p-4 rounded-lg text-center">
+                            <div class="text-3xl font-bold text-navy">{{ user.message_count }}</div>
+                            <div class="text-sm text-navy-light">Messages</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-cream-dark">
+                        <div class="text-sm text-navy-light mb-2">Account Age</div>
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-amber-light rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-calendar-alt text-navy"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold">{{ user.account_age_days }} days</div>
+                                <div class="text-xs text-navy-light">Joined {{ user.date_joined|date:"F j, Y" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="hidden fixed inset-0 z-50 bg-navy bg-opacity-75 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 paper-texture">
+            <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                <h3 class="font-serif font-bold text-xl text-navy">Edit Profile</h3>
+                <button 
+                    onclick="document.getElementById('edit-profile-modal').classList.add('hidden')"
+                    class="text-navy hover:text-amber focus:outline-none"
+                >
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form method="post" action="{% url 'users:update_profile' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="p-6 space-y-4">
+                    <div class="mb-4 text-center">
+                        <div class="relative inline-block">
+                            {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="w-24 h-24 rounded-full object-cover border-4 border-cream-light mx-auto">
+                            {% else %}
+                            <div class="w-24 h-24 rounded-full bg-navy flex items-center justify-center text-cream-light text-2xl font-bold mx-auto">
+                                {{ user.username|slice:":1" }}
+                            </div>
+                            {% endif %}
+                            
+                            <label for="profile-picture-upload" class="absolute bottom-0 right-0 bg-amber hover:bg-amber-dark text-navy w-8 h-8 rounded-full flex items-center justify-center cursor-pointer">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                            <input id="profile-picture-upload" type="file" name="profile_picture" class="hidden">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="first-name" class="block text-sm font-medium text-navy mb-1">
+                                First Name
+                            </label>
+                            <input 
+                                type="text" 
+                                id="first-name" 
+                                name="first_name" 
+                                value="{{ user.first_name }}" 
+                                class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                            >
+                        </div>
+                        
+                        <div>
+                            <label for="last-name" class="block text-sm font-medium text-navy mb-1">
+                                Last Name
+                            </label>
+                            <input 
+                                type="text" 
+                                id="last-name" 
+                                name="last_name" 
+                                value="{{ user.last_name }}" 
+                                class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-navy mb-1">
+                            Email Address
+                        </label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            value="{{ user.email }}" 
+                            class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                        >
+                    </div>
+                    
+                    <div>
+                        <label for="bio" class="block text-sm font-medium text-navy mb-1">
+                            Bio
+                        </label>
+                        <textarea 
+                            id="bio" 
+                            name="bio" 
+                            rows="4"
+                            class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                            placeholder="Tell us a bit about yourself..."
+                        >{{ user.bio }}</textarea>
+                    </div>
+                </div>
+                
+                <div class="px-6 py-4 border-t border-cream-dark bg-cream-light flex justify-end">
+                    <button 
+                        type="button"
+                        onclick="document.getElementById('edit-profile-modal').classList.add('hidden')"
+                        class="bg-gray-300 hover:bg-gray-400 text-navy font-bold py-2 px-4 rounded-lg transition duration-200 mr-2"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        type="submit"
+                        class="bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200"
+                    >
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Change Password Modal -->
+    <div id="change-password-modal" class="hidden fixed inset-0 z-50 bg-navy bg-opacity-75 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 paper-texture">
+            <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                <h3 class="font-serif font-bold text-xl text-navy">Change Password</h3>
+                <button 
+                    onclick="document.getElementById('change-password-modal').classList.add('hidden')"
+                    class="text-navy hover:text-amber focus:outline-none"
+                >
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form method="post" action="{% url 'users:change_password' %}">
+                {% csrf_token %}
+                
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label for="current-password" class="block text-sm font-medium text-navy mb-1">
+                            Current Password
+                        </label>
+                        <input 
+                            type="password" 
+                            id="current-password" 
+                            name="current_password" 
+                            class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                            required
+                        >
+                    </div>
+                    
+                    <div>
+                        <label for="new-password" class="block text-sm font-medium text-navy mb-1">
+                            New Password
+                        </label>
+                        <input 
+                            type="password" 
+                            id="new-password" 
+                            name="new_password" 
+                            class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                            required
+                        >
+                        <p class="text-xs text-navy-light mt-1">
+                            Password must be at least 8 characters and include a mix of letters, numbers, and symbols.
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label for="confirm-password" class="block text-sm font-medium text-navy mb-1">
+                            Confirm New Password
+                        </label>
+                        <input 
+                            type="password" 
+                            id="confirm-password" 
+                            name="confirm_password" 
+                            class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <div class="px-6 py-4 border-t border-cream-dark bg-cream-light flex justify-end">
+                    <button 
+                        type="button"
+                        onclick="document.getElementById('change-password-modal').classList.add('hidden')"
+                        class="bg-gray-300 hover:bg-gray-400 text-navy font-bold py-2 px-4 rounded-lg transition duration-200 mr-2"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        type="submit"
+                        class="bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200"
+                    >
+                        Change Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Two-Factor Authentication Modal -->
+    <div id="two-factor-modal" class="hidden fixed inset-0 z-50 bg-navy bg-opacity-75 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 paper-texture">
+            <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                <h3 class="font-serif font-bold text-xl text-navy">Two-Factor Authentication</h3>
+                <button 
+                    onclick="document.getElementById('two-factor-modal').classList.add('hidden')"
+                    class="text-navy hover:text-amber focus:outline-none"
+                >
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                {% if user.two_factor_enabled %}
+                    <div class="mb-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">2FA is enabled</h4>
+                                <p class="text-sm text-navy-light">Your account is protected with two-factor authentication.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-cream-light p-4 rounded-lg">
+                            <p class="text-navy-light text-sm mb-2">
+                                Recovery codes allow you to access your account if you lose your phone or can't receive codes via the authenticator app.
+                            </p>
+                            <button class="text-amber hover:text-amber-dark text-sm font-bold">
+                                <i class="fas fa-print mr-1"></i> View Recovery Codes
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <form method="post" action="{% url 'users:disable_2fa' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full bg-red-100 text-red-700 hover:bg-red-200 font-bold py-2 px-4 rounded-lg transition duration-200">
+                            <i class="fas fa-times-circle mr-1"></i> Disable Two-Factor Authentication
+                        </button>
+                    </form>
+                {% else %}
+                    <div class="mb-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-amber-light text-navy rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">Protect your account</h4>
+                                <p class="text-sm text-navy-light">Two-factor authentication adds an extra layer of security to your account.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-cream-light p-4 rounded-lg">
+                            <p class="text-navy-light text-sm">
+                                With 2FA enabled, you'll need to enter a code from your authenticator app in addition to your password when you log in.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <a href="{% url 'users:setup_2fa' %}" class="block w-full bg-amber hover:bg-amber-dark text-navy text-center font-bold py-2 px-4 rounded-lg transition duration-200">
+                        <i class="fas fa-lock mr-1"></i> Enable Two-Factor Authentication
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Connected Accounts Modal -->
+    <div id="connected-accounts-modal" class="hidden fixed inset-0 z-50 bg-navy bg-opacity-75 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 paper-texture">
+            <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                <h3 class="font-serif font-bold text-xl text-navy">Connected Accounts</h3>
+                <button 
+                    onclick="document.getElementById('connected-accounts-modal').classList.add('hidden')"
+                    class="text-navy hover:text-amber focus:outline-none"
+                >
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <p class="text-navy-light mb-4">
+                    Connect your account with these services to enable additional features and easier login.
+                </p>
+                
+                <div class="space-y-4">
+                    <!-- Google -->
+                    <div class="flex items-center justify-between p-3 bg-cream-light rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center mr-3">
+                                <i class="fab fa-google text-xl"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold">Google</div>
+                                <div class="text-xs text-navy-light">
+                                    {% if user.google_connected %}
+                                        Connected as {{ user.google_email }}
+                                    {% else %}
+                                        Not connected
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if user.google_connected %}
+                            <form method="post" action="{% url 'users:disconnect_google' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-unlink"></i> Disconnect
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'users:connect_google' %}" class="bg-amber hover:bg-amber-dark text-navy py-1 px-3 rounded text-sm font-bold">
+                                Connect
+                            </a>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Facebook -->
+                    <div class="flex items-center justify-between p-3 bg-cream-light rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center mr-3">
+                                <i class="fab fa-facebook-f text-xl"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold">Facebook</div>
+                                <div class="text-xs text-navy-light">
+                                    {% if user.facebook_connected %}
+                                        Connected as {{ user.facebook_name }}
+                                    {% else %}
+                                        Not connected
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if user.facebook_connected %}
+                            <form method="post" action="{% url 'users:disconnect_facebook' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-unlink"></i> Disconnect
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'users:connect_facebook' %}" class="bg-amber hover:bg-amber-dark text-navy py-1 px-3 rounded text-sm font-bold">
+                                Connect
+                            </a>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Twitter -->
+                    <div class="flex items-center justify-between p-3 bg-cream-light rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center mr-3">
+                                <i class="fab fa-twitter text-xl"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold">Twitter</div>
+                                <div class="text-xs text-navy-light">
+                                    {% if user.twitter_connected %}
+                                        Connected as @{{ user.twitter_username }}
+                                    {% else %}
+                                        Not connected
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if user.twitter_connected %}
+                            <form method="post" action="{% url 'users:disconnect_twitter' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-unlink"></i> Disconnect
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'users:connect_twitter' %}" class="bg-amber hover:bg-amber-dark text-navy py-1 px-3 rounded text-sm font-bold">
+                                Connect
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Download Data Modal -->
+    <div id="download-data-modal" class="hidden fixed inset-0 z-50 bg-navy bg-opacity-75 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 paper-texture">
+            <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                <h3 class="font-serif font-bold text-xl text-navy">Download Your Data</h3>
+                <button 
+                    onclick="document.getElementById('download-data-modal').classList.add('hidden')"
+                    class="text-navy hover:text-amber focus:outline-none"
+                >
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <p class="text-navy-light mb-4">
+                    Select what data you'd like to download. The export will be prepared and sent to your email address.
+                </p>
+                
+                <form method="post" action="{% url 'users:request_data_export' %}">
+                    {% csrf_token %}
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                id="export-profile" 
+                                name="export_profile" 
+                                checked
+                                class="rounded border-cream-dark text-amber focus:ring-amber"
+                            >
+                            <label for="export-profile" class="ml-2">
+                                Profile Information
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                id="export-characters" 
+                                name="export_characters" 
+                                checked
+                                class="rounded border-cream-dark text-amber focus:ring-amber"
+                            >
+                            <label for="export-characters" class="ml-2">
+                                Characters
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                id="export-conversations" 
+                                name="export_conversations" 
+                                checked
+                                class="rounded border-cream-dark text-amber focus:ring-amber"
+                            >
+                            <label for="export-conversations" class="ml-2">
+                                Conversations
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                id="export-stories" 
+                                name="export_stories" 
+                                checked
+                                class="rounded border-cream-dark text-amber focus:ring-amber"
+                            >
+                            <label for="export-stories" class="ml-2">
+                                Stories
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                id="export-worlds" 
+                                name="export_worlds" 
+                                checked
+                                class="rounded border-cream-dark text-amber focus:ring-amber"
+                            >
+                            <label for="export-worlds" class="ml-2">
+                                Worlds
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-cream-light p-4 rounded-lg text-sm text-navy-light mb-6">
+                        <p>
+                            <i class="fas fa-info-circle mr-1"></i> 
+                            Data exports are prepared within 24 hours and sent to your email address. You'll receive a secure download link once your data is ready.
+                        </p>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200">
+                        Request Data Export
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Account Modal -->
+    <div id="delete-account-modal" class="hidden fixed inset-0 z-50 bg-navy bg-opacity-75 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 paper-texture">
+            <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                <h3 class="font-serif font-bold text-xl text-red-600">Delete Account</h3>
+                <button 
+                    onclick="document.getElementById('delete-account-modal').classList.add('hidden')"
+                    class="text-navy hover:text-amber focus:outline-none"
+                >
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <div class="bg-red-50 p-4 rounded-lg mb-6">
+                    <h4 class="font-bold text-red-700 mb-2">Warning: This action cannot be undone</h4>
+                    <p class="text-sm text-red-600">
+                        Deleting your account will permanently remove all of your data, including:
+                    </p>
+                    <ul class="text-sm text-red-600 list-disc list-inside mt-2 space-y-1">
+                        <li>{{ user.character_count }} character(s)</li>
+                        <li>{{ user.conversation_count }} conversation(s)</li>
+                        <li>{{ user.story_count }} story/stories</li>
+                        <li>All your account settings and preferences</li>
+                    </ul>
+                </div>
+                
+                <form method="post" action="{% url 'users:delete_account' %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="delete-confirm" class="block text-sm font-medium text-navy mb-1">
+                            To confirm, type "DELETE" below:
+                        </label>
+                        <input 
+                            type="text" 
+                            id="delete-confirm" 
+                            name="delete_confirmation" 
+                            class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="delete-password" class="block text-sm font-medium text-navy mb-1">
+                            Enter your password:
+                        </label>
+                        <input 
+                            type="password" 
+                            id="delete-password" 
+                            name="password" 
+                            class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="flex items-center mb-6">
+                        <input 
+                            type="checkbox" 
+                            id="delete-understand" 
+                            name="understand_consequences" 
+                            required
+                            class="rounded border-cream-dark text-amber focus:ring-amber"
+                        >
+                        <label for="delete-understand" class="ml-2 text-sm text-red-600">
+                            I understand that this action is permanent and cannot be undone.
+                        </label>
+                    </div>
+                    
+                    <button 
+                        type="submit"
+                        class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+                    >
+                        Permanently Delete My Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

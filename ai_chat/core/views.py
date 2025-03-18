@@ -6,6 +6,7 @@ from characters.models import Character
 from conversations.models import Conversation, Message
 from stories.models import Story
 from journals.models import Journal
+from token_management.context_processors import token_usage
 
 def home(request):
     """Home page view"""
@@ -201,3 +202,16 @@ def get_inspiration_prompts():
         'conversation_starter': random.choice(conversation_starters),
         'story_idea': random.choice(story_ideas)
     }
+
+def token_usage(request):
+    """View to display token usage information"""
+    user = request.user
+    token_usage = token_usage(request)['token_usage']
+    token_limit = request(request)['token_limit']
+
+    context = {
+        'token_usage': token_usage,
+        'token_limit': token_limit,
+    }
+    
+    return render(request, 'alerts/token_usage.html', context)  # Adjust template path as needed

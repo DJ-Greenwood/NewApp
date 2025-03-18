@@ -7,15 +7,15 @@ from django.utils import timezone
 from django.db.models import Sum
 
 from .forms import CustomUserCreationForm, CustomUserChangeForm, UserPreferencesForm
-from .models import CustomUser
 from token_management.models import UserTokenLimit, TokenUsage
 from django.contrib.auth.views import (
     PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, 
     PasswordResetCompleteView, PasswordChangeView, PasswordChangeDoneView
 )
 from django.urls import reverse_lazy
-from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.views.decorators.http import require_http_methods
+from django.urls import reverse
 
 def signup(request):
     """User registration view"""
@@ -115,7 +115,7 @@ def profile_view(request):
         'most_active_character': most_active_character,
     }
     
-    return render(request, 'users/profile.html', context)
+    return render(request, 'components/profile/profile.html', context)
 
 @login_required
 def edit_profile(request):
@@ -366,3 +366,107 @@ class CustomPasswordChangeDoneView(PasswordChangeDoneView):
     Shown after a user successfully changes their password.
     """
     template_name = 'users/password_change_done.html'
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def update_notifications(request):
+    """
+    View for handling the notification preferences page and form submission.
+    GET: Renders the notification settings page
+    POST: Updates the user's notification preferences
+    """
+    user = request.user
+    
+    if request.method == "POST":
+        # Email notification settings
+        user.email_notifications = 'email_notifications' in request.POST
+        user.weekly_summary = 'weekly_summary' in request.POST
+        user.marketing_emails = 'marketing_emails' in request.POST
+        
+        # Character notification settings
+        user.character_responses = 'character_responses' in request.POST
+        user.inactive_reminders = 'inactive_reminders' in request.POST
+        user.character_birthdays = 'character_birthdays' in request.POST
+        
+        # Story notification settings
+        user.story_updates = 'story_updates' in request.POST
+        user.story_suggestions = 'story_suggestions' in request.POST
+        
+        # World notification settings
+        user.world_updates = 'world_updates' in request.POST
+        user.collaboration_invitations = 'collaboration_invitations' in request.POST
+        
+        # System notification settings
+        user.token_alerts = 'token_alerts' in request.POST
+        user.subscription_reminders = 'subscription_reminders' in request.POST
+        user.feature_announcements = 'feature_announcements' in request.POST
+        
+        # Notification delivery methods
+        user.delivery_email = 'delivery_email' in request.POST
+        user.delivery_push = 'delivery_push' in request.POST
+        user.delivery_sms = 'delivery_sms' in request.POST
+        
+        # If SMS delivery is enabled, update phone number
+        if user.delivery_sms and 'phone_number' in request.POST:
+            user.phone_number = request.POST.get('phone_number')
+        
+        # Notification frequency
+        if 'notification_frequency' in request.POST:
+            user.notification_frequency = request.POST.get('notification_frequency')
+        
+        # Quiet hours settings
+        user.quiet_hours_enabled = 'quiet_hours_enabled' in request.POST
+        
+        if user.quiet_hours_enabled:
+            user.quiet_hours_start = request.POST.get('quiet_hours_start')
+            user.quiet_hours_end = request.POST.get('quiet_hours_end')
+        
+        # Save changes
+        user.save()
+        
+        # Show success message
+        messages.success(request, "Your notification preferences have been updated.")
+        
+        # Redirect to the profile page
+        return redirect(reverse('users:profile'))
+    
+    # GET request - render the notifications settings page
+    context = {
+        'user': user,
+    }
+    
+    return render(request, 'components/profile/update_notifications.html', context)
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def update_privacy(request):
+    """
+    View for handling the privacy settings page and form submission.
+    GET: Renders the privacy settings page
+    POST: Updates the user's privacy settings
+    """
+    user = request.user
+    
+    if request.method == "POST":
+        # Privacy settings
+        user.public_profile = 'public_profile' in request.POST
+        user.show_characters = 'show_characters' in request.POST
+        user.show_stories = 'show_stories' in request.POST
+        
+        # Additional privacy settings can be added here
+        
+        # Save changes
+        user.save()
+        
+        # Show success message
+        messages.success(request, "Your privacy settings have been updated.")
+        
+        # Redirect to the profile page
+        return redirect(reverse('users:profile'))
+    
+    # GET request - render the privacy settings page
+    context = {
+        'user': user,
+    }
+    
+    return render(request, 'components/profile/update_privacy.html', context)

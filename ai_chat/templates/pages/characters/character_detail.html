@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ character.name }} - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+    {% include "components/headers/page_header.html" with 
+        title=character.name
+        back_url="{% url 'characters:list' %}"
+        back_text="Back to Characters"
+        action_button='
+            <a href="{% url 'conversations:create_with_character' character.id %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-6 rounded-lg transition duration-200 text-center mr-2">
+                <i class="fas fa-comment-dots mr-2"></i> Start Conversation
+            </a>
+            <a href="{% url 'characters:edit' character.id %}" class="inline-block bg-navy hover:bg-navy-light text-cream-light font-bold py-2 px-6 rounded-lg transition duration-200 text-center">
+                <i class="fas fa-edit mr-2"></i> Edit Character
+            </a>
+        '
+    %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Character profile card -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture sticky top-4">
+                <div class="h-40 bg-navy flex items-center justify-center relative">
+                    {% if character.avatar %}
+                    <img src="{{ character.avatar.url }}" alt="{{ character.name }}" class="w-full h-full object-cover">
+                    {% else %}
+                    <div class="w-24 h-24 rounded-full bg-cream-light flex items-center justify-center text-navy text-4xl font-bold">
+                        {{ character.name|slice:":1" }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Favorite toggle button -->
+                    <form method="post" action="{% url 'characters:toggle_favorite' character.id %}" class="absolute top-2 right-2">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-white rounded-full p-2 text-amber hover:text-amber-dark transition duration-200">
+                            <i class="fas {% if character.is_favorite %}fa-star{% else %}fa-star text-gray-400{% endif %}"></i>
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="p-6">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-serif font-bold mb-2">{{ character.name }}</h2>
+                        {% if character.age %}
+                        <div class="text-navy-light">Age: {{ character.age }}</div>
+                        {% endif %}
+                        <div class="text-navy-light mt-2">{{ character.description }}</div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="font-bold text-navy mb-2">Stats</h3>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <div class="text-navy-light">Conversations</div>
+                                <div class="font-bold text-lg">{{ character.conversation_count }}</div>
+                            </div>
+                            <div>
+                                <div class="text-navy-light">Total Messages</div>
+                                <div class="font-bold text-lg">{{ character.message_count }}</div>
+                            </div>
+                            <div>
+                                <div class="text-navy-light">Created</div>
+                                <div>{{ character.created_at|date:"M d, Y" }}</div>
+                            </div>
+                            <div>
+                                <div class="text-navy-light">Last Chat</div>
+                                <div>{{ character.last_interaction|date:"M d, Y"|default:"Never" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-cream-dark pt-6">
+                        <div class="flex space-x-2">
+                            <a href="{% url 'stories:create_with_character' character.id %}" class="bg-cream-light hover:bg-cream-dark text-navy py-2 px-4 rounded-lg text-sm font-bold transition duration-200 text-center flex-1">
+                                <i class="fas fa-book mr-1"></i> Start Story
+                            </a>
+                            <a href="{% url 'journals:create_with_character' character.id %}" class="bg-cream-light hover:bg-cream-dark text-navy py-2 px-4 rounded-lg text-sm font-bold transition duration-200 text-center flex-1">
+                                <i class="fas fa-journal-whills mr-1"></i> Journal
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Character details -->
+        <div class="lg:col-span-2">
+            <div class="space-y-8">
+                <!-- Personality and traits -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                    <div class="px-6 py-4 border-b border-cream-dark">
+                        <h3 class="font-serif font-bold text-xl text-navy">Personality & Traits</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="prose text-navy-light">
+                            {{ character.personality|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Background -->
+                {% if character.background %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                    <div class="px-6 py-4 border-b border-cream-dark">
+                        <h3 class="font-serif font-bold text-xl text-navy">Background</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="prose text-navy-light">
+                            {{ character.background|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Speaking style -->
+                {% if character.speaking_style %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                    <div class="px-6 py-4 border-b border-cream-dark">
+                        <h3 class="font-serif font-bold text-xl text-navy">Speaking Style</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="prose text-navy-light">
+                            {{ character.speaking_style|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Knowledge and expertise -->
+                {% if character.knowledge %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                    <div class="px-6 py-4 border-b border-cream-dark">
+                        <h3 class="font-serif font-bold text-xl text-navy">Knowledge & Expertise</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="prose text-navy-light">
+                            {{ character.knowledge|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Recent conversations -->
+                {% if recent_conversations %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                    <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                        <h3 class="font-serif font-bold text-xl text-navy">Recent Conversations</h3>
+                        <a href="{% url 'conversations:list_with_character' character.id %}" class="text-amber hover:text-amber-dark text-sm">
+                            View All
+                        </a>
+                    </div>
+                    <div class="divide-y divide-cream-dark">
+                        {% for conversation in recent_conversations %}
+                        <a href="{% url 'conversations:detail' conversation.id %}" class="block p-4 hover:bg-cream-light transition duration-200">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-bold">{{ conversation.title }}</div>
+                                    <div class="text-sm text-navy-light">
+                                        {{ conversation.message_count }} messages • Last message: {{ conversation.updated_at|date:"M d, Y" }}
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-right text-amber"></i>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Delete character confirmation -->
+                <div class="bg-red-50 rounded-lg p-6 border border-red-200">
+                    <h3 class="font-bold text-red-700 mb-2">Danger Zone</h3>
+                    <p class="text-red-600 text-sm mb-4">
+                        Deleting a character will permanently remove them and all their conversations. This action cannot be undone.
+                    </p>
+                    <button 
+                        onclick="document.getElementById('delete-modal').classList.remove('hidden')"
+                        class="bg-white border border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-bold py-2 px-4 rounded-lg text-sm transition duration-200">
+                        Delete Character
+                    </button>
+                    
+                    <!-- Delete confirmation modal -->
+                    <div id="delete-modal" class="hidden fixed inset-0 z-50 bg-navy bg-opacity-75 flex items-center justify-center">
+                        <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 paper-texture">
+                            <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                                <h3 class="font-serif font-bold text-xl text-navy">Confirm Deletion</h3>
+                                <button 
+                                    onclick="document.getElementById('delete-modal').classList.add('hidden')"
+                                    class="text-navy hover:text-amber focus:outline-none"
+                                >
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="p-6 space-y-4">
+                                <p class="text-navy-light">
+                                    Are you sure you want to delete <strong>{{ character.name }}</strong>? This action cannot be undone.
+                                </p>
+                                
+                                <div class="bg-cream-light p-4 rounded-lg text-sm">
+                                    <p class="font-bold text-navy">This will permanently delete:</p>
+                                    <ul class="list-disc list-inside mt-2 space-y-1 text-navy-light">
+                                        <li>This character and all their data</li>
+                                        <li>{{ character.conversation_count }} conversation(s)</li>
+                                        <li>{{ character.message_count }} message(s)</li>
+                                        <li>Any stories involving this character</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="px-6 py-4 border-t border-cream-dark bg-cream-light flex justify-end">
+                                <button 
+                                    onclick="document.getElementById('delete-modal').classList.add('hidden')"
+                                    class="bg-gray-300 hover:bg-gray-400 text-navy font-bold py-2 px-4 rounded-lg transition duration-200 mr-2"
+                                >
+                                    Cancel
+                                </button>
+                                <form method="post" action="{% url 'characters:delete' character.id %}">
+                                    {% csrf_token %}
+                                    <button 
+                                        type="submit"
+                                        class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+                                    >
+                                        Delete Permanently
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

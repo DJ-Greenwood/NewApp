@@ -1,0 +1,454 @@
+{% extends 'base.html' %}
+
+{% block title %}My Conversations - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+    {% include "components/headers/page_header.html" with 
+        title="My Conversations" 
+        subtitle="Browse your conversations with your characters" 
+        action_button='
+            <a href="{% url 'characters:list' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200 text-center">
+                <i class="fas fa-comment-dots mr-2"></i> Start New Conversation
+            </a>
+        '
+    %}
+
+    <!-- Conversation filter and search -->
+    <div class="mb-6 bg-white rounded-lg shadow-md p-4 paper-texture">
+        <form method="get" action="{% url 'conversations:list' %}" class="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
+            <div class="flex-grow">
+                <label for="search" class="sr-only">Search Conversations</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input 
+                        type="text" 
+                        id="search" 
+                        name="search" 
+                        value="{{ request.GET.search }}"
+                        class="block w-full pl-10 pr-3 py-2 border border-cream-dark rounded-lg focus:ring-amber focus:border-amber"
+                        placeholder="Search conversations..."
+                    >
+                </div>
+            </div>
+            
+            <div class="md:w-1/4">
+                <label for="character" class="sr-only">Character</label>
+                <select 
+                    id="character" 
+                    name="character" 
+                    class="block w-full border border-cream-dark rounded-lg focus:ring-amber focus:border-amber"
+                >
+                    <option value="">All Characters</option>
+                    {% for character in characters %}
+                    <option value="{{ character.id }}" {% if request.GET.character == character.id|stringformat:"s" %}selected{% endif %}>
+                        {{ character.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="md:w-1/4">
+                <label for="sort" class="sr-only">Sort By</label>
+                <select 
+                    id="sort" 
+                    name="sort" 
+                    class="block w-full border border-cream-dark rounded-lg focus:ring-amber focus:border-amber"
+                >
+                    <option value="recent" {% if request.GET.sort == 'recent' or not request.GET.sort %}selected{% endif %}>
+                        Most Recent
+                    </option>
+                    <option value="oldest" {% if request.GET.sort == 'oldest' %}selected{% endif %}>
+                        Oldest First
+                    </option>
+                    <option value="longest" {% if request.GET.sort == 'longest' %}selected{% endif %}>
+                        Most Messages
+                    </option>
+                    <option value="favorites" {% if request.GET.sort == 'favorites' %}selected{% endif %}>
+                        Favorites Only
+                    </option>
+                </select>
+            </div>
+            
+            <div>
+                <button type="submit" class="w-full md:w-auto bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200">
+                    Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Conversation sections -->
+    <div class="space-y-8">
+        <!-- Favorite Conversations -->
+        {% if favorite_conversations %}
+        <div>
+            {% include "components/headers/section_header.html" with title="Favorite Conversations" %}
+            
+            <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                {% for conversation in favorite_conversations %}
+                <a href="{% url 'conversations:detail' conversation.id %}" class="block border-b border-cream-dark last:border-b-0 hover:bg-cream-light transition duration-200">
+                    <div class="p-4 flex items-center">
+                        <div class="flex-shrink-0 mr-4">
+                            {% include "components/profile/avatar.html" with character=conversation.character %}
+                        </div>
+                        
+                        <div class="flex-grow min-w-0">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold truncate">
+                                        {% if conversation.title %}
+                                            {{ conversation.title }}
+                                        {% else %}
+                                            Conversation with {{ conversation.character.name }}
+                                        {% endif %}
+                                    </h3>
+                                    <div class="text-sm text-navy-light">
+                                        {{ conversation.character.name }} • {{ conversation.message_count }} messages
+                                    </div>
+                                </div>
+                                <div class="text-xs text-navy-light">
+                                    {{ conversation.updated_at|date:"M d, Y" }}
+                                </div>
+                            </div>
+                            
+                            {% if conversation.last_message %}
+                            <div class="mt-2 text-sm text-navy-light truncate">
+                                {{ conversation.last_message.sender_name }}: {{ conversation.last_message.content|truncatechars:100 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="ml-4 flex-shrink-0">
+                            <span class="text-amber">
+                                <i class="fas fa-chevron-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Recent Conversations -->
+        {% if recent_conversations %}
+        <div>
+            {% include "components/headers/section_header.html" with title="Recent Conversations" %}
+            
+            <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                {% for conversation in recent_conversations %}
+                <a href="{% url 'conversations:detail' conversation.id %}" class="block border-b border-cream-dark last:border-b-0 hover:bg-cream-light transition duration-200">
+                    <div class="p-4 flex items-center">
+                        <div class="flex-shrink-0 mr-4">
+                            {% include "components/profile/avatar.html" with character=conversation.character %}
+                        </div>
+                        
+                        <div class="flex-grow min-w-0">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold truncate">
+                                        {% if conversation.title %}
+                                            {{ conversation.title }}
+                                        {% else %}
+                                            Conversation with {{ conversation.character.name }}
+                                        {% endif %}
+                                    </h3>
+                                    <div class="text-sm text-navy-light">
+                                        {{ conversation.character.name }} • {{ conversation.message_count }} messages
+                                    </div>
+                                </div>
+                                <div class="text-xs text-navy-light">
+                                    {{ conversation.updated_at|date:"M d, Y" }}
+                                </div>
+                            </div>
+                            
+                            {% if conversation.last_message %}
+                            <div class="mt-2 text-sm text-navy-light truncate">
+                                {{ conversation.last_message.sender_name }}: {{ conversation.last_message.content|truncatechars:100 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="ml-4 flex-shrink-0 flex items-center">
+                            <form method="post" action="{% url 'conversations:toggle_favorite' conversation.id %}" class="mr-2">
+                                {% csrf_token %}
+                                <button type="submit" class="text-gray-400 hover:text-amber">
+                                    <i class="fas {% if conversation.is_favorite %}fa-star text-amber{% else %}fa-star{% endif %}"></i>
+                                </button>
+                            </form>
+                            <span class="text-amber">
+                                <i class="fas fa-chevron-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            
+            {% if has_more_conversations %}
+            <div class="mt-4 text-center">
+                <a href="{% url 'conversations:list' %}?page={{ next_page }}" class="inline-block bg-cream hover:bg-cream-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200">
+                    Load More
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- No conversations state -->
+        {% if not favorite_conversations and not recent_conversations %}
+        <div class="bg-white rounded-lg shadow-md p-8 text-center paper-texture">
+            <div class="w-20 h-20 bg-amber-light rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-comment-dots text-3xl text-navy"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">No Conversations Yet</h3>
+            <p class="text-navy-light mb-6">You haven't started any conversations yet. Choose a character to begin chatting!</p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="{% url 'characters:list' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-6 rounded-lg transition duration-200">
+                    Browse Characters
+                </a>
+                <a href="{% url 'characters:create' %}" class="inline-block bg-navy hover:bg-navy-light text-cream-light font-bold py-2 px-6 rounded-lg transition duration-200">
+                    Create a Character
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Bulk actions modal -->
+    <div id="bulk-actions-modal" class="hidden fixed inset-0 z-50 bg-navy bg-opacity-75 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 paper-texture">
+            <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                <h3 class="font-serif font-bold text-xl text-navy">Bulk Actions</h3>
+                <button 
+                    onclick="document.getElementById('bulk-actions-modal').classList.add('hidden')"
+                    class="text-navy hover:text-amber focus:outline-none"
+                >
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <p class="text-navy-light mb-4">
+                    Select the action you'd like to perform on the selected conversations.
+                </p>
+                
+                <div class="space-y-4">
+                    <button 
+                        onclick="bulkAddToFavorites()"
+                        class="w-full text-left flex items-center p-3 bg-cream-light hover:bg-cream rounded-lg transition duration-200"
+                    >
+                        <div class="w-10 h-10 bg-amber-light rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-star text-navy"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold">Add to Favorites</div>
+                            <div class="text-xs text-navy-light">Mark selected conversations as favorites</div>
+                        </div>
+                    </button>
+                    
+                    <button 
+                        onclick="bulkRemoveFromFavorites()"
+                        class="w-full text-left flex items-center p-3 bg-cream-light hover:bg-cream rounded-lg transition duration-200"
+                    >
+                        <div class="w-10 h-10 bg-amber-light rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-star-half-alt text-navy"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold">Remove from Favorites</div>
+                            <div class="text-xs text-navy-light">Remove selected conversations from favorites</div>
+                        </div>
+                    </button>
+                    
+                    <button 
+                        onclick="bulkArchive()"
+                        class="w-full text-left flex items-center p-3 bg-cream-light hover:bg-cream rounded-lg transition duration-200"
+                    >
+                        <div class="w-10 h-10 bg-amber-light rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-archive text-navy"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold">Archive</div>
+                            <div class="text-xs text-navy-light">Archive selected conversations</div>
+                        </div>
+                    </button>
+                    
+                    <button 
+                        onclick="confirmBulkDelete()"
+                        class="w-full text-left flex items-center p-3 bg-red-100 hover:bg-red-200 rounded-lg transition duration-200"
+                    >
+                        <div class="w-10 h-10 bg-red-200 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-trash-alt text-red-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-red-700">Delete</div>
+                            <div class="text-xs text-red-600">Permanently delete selected conversations</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bulk delete confirmation modal -->
+    <div id="bulk-delete-modal" class="hidden fixed inset-0 z-50 bg-navy bg-opacity-75 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 paper-texture">
+            <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                <h3 class="font-serif font-bold text-xl text-red-600">Confirm Deletion</h3>
+                <button 
+                    onclick="document.getElementById('bulk-delete-modal').classList.add('hidden')"
+                    class="text-navy hover:text-amber focus:outline-none"
+                >
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <div class="bg-red-50 p-4 rounded-lg mb-6">
+                    <h4 class="font-bold text-red-700 mb-2">Warning: This action cannot be undone</h4>
+                    <p class="text-sm text-red-600">
+                        You are about to permanently delete <span id="delete-count" class="font-bold">0</span> conversations. This action cannot be undone.
+                    </p>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button 
+                        type="button"
+                        onclick="document.getElementById('bulk-delete-modal').classList.add('hidden')"
+                        class="flex-1 bg-gray-300 hover:bg-gray-400 text-navy font-bold py-2 px-4 rounded-lg transition duration-200"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        type="button"
+                        onclick="bulkDelete()"
+                        class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+                    >
+                        Confirm Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Bulk actions related JavaScript
+    let selectedConversations = [];
+    
+    function toggleConversationSelection(id) {
+        const index = selectedConversations.indexOf(id);
+        if (index === -1) {
+            selectedConversations.push(id);
+        } else {
+            selectedConversations.splice(index, 1);
+        }
+        
+        updateSelectionUI();
+    }
+    
+    function selectAllConversations() {
+        const checkboxes = document.querySelectorAll('input[name="conversation_id"]');
+        const selectAllCheckbox = document.getElementById('select-all');
+        
+        if (selectAllCheckbox.checked) {
+            selectedConversations = [];
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                selectedConversations.push(checkbox.value);
+            });
+        } else {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            selectedConversations = [];
+        }
+        
+        updateSelectionUI();
+    }
+    
+    function updateSelectionUI() {
+        const bulkActionsButton = document.getElementById('bulk-actions-button');
+        const selectionCount = document.getElementById('selection-count');
+        
+        if (selectedConversations.length > 0) {
+            bulkActionsButton.classList.remove('hidden');
+            selectionCount.textContent = selectedConversations.length;
+        } else {
+            bulkActionsButton.classList.add('hidden');
+        }
+    }
+    
+    function showBulkActionsModal() {
+        document.getElementById('bulk-actions-modal').classList.remove('hidden');
+    }
+    
+    function confirmBulkDelete() {
+        document.getElementById('bulk-actions-modal').classList.add('hidden');
+        document.getElementById('delete-count').textContent = selectedConversations.length;
+        document.getElementById('bulk-delete-modal').classList.remove('hidden');
+    }
+    
+    function bulkAddToFavorites() {
+        performBulkAction('add_to_favorites');
+    }
+    
+    function bulkRemoveFromFavorites() {
+        performBulkAction('remove_from_favorites');
+    }
+    
+    function bulkArchive() {
+        performBulkAction('archive');
+    }
+    
+    function bulkDelete() {
+        performBulkAction('delete');
+        document.getElementById('bulk-delete-modal').classList.add('hidden');
+    }
+    
+    function performBulkAction(action) {
+        fetch(`{% url 'conversations:bulk_action' %}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                action: action,
+                conversation_ids: selectedConversations
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Hide modals
+                document.getElementById('bulk-actions-modal').classList.add('hidden');
+                
+                // Reload page to show changes
+                window.location.reload();
+            }
+        });
+    }
+    
+    // Auto-submit form when filter options change
+    document.addEventListener('DOMContentLoaded', function() {
+        const characterSelect = document.getElementById('character');
+        const sortSelect = document.getElementById('sort');
+        
+        if (characterSelect) {
+            characterSelect.addEventListener('change', function() {
+                this.form.submit();
+            });
+        }
+        
+        if (sortSelect) {
+            sortSelect.addEventListener('change', function() {
+                this.form.submit();
+            });
+        }
+    });
+</script>
+{% endblock %}

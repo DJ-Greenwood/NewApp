@@ -54,7 +54,7 @@ def conversation_list(request):
         'show_archived': show_archived,
     }
     
-    return render(request, 'conversations/conversation_list.html', context)
+    return render(request, 'pages/conversations/conversation.html', context)
 
 @login_required
 def conversation_detail(request, pk):
@@ -143,7 +143,7 @@ def conversation_detail(request, pk):
         'other_conversations': other_conversations,
     }
     
-    return render(request, 'conversations/conversation_detail.html', context)
+    return render(request, 'pages/conversations/conversation_detail.html', context)
 
 @login_required
 def conversation_create(request):
@@ -190,7 +190,7 @@ def conversation_create(request):
         'initial_prompt': initial_prompt,
     }
     
-    return render(request, 'conversations/conversation_create.html', context)
+    return render(request, 'pages/conversations/conversation_create.html', context)
 
 @login_required
 def conversation_create_with_character(request, character_id):
@@ -223,7 +223,7 @@ def conversation_archive(request, pk):
         'conversation': conversation,
     }
     
-    return render(request, 'conversations/conversation_confirm_archive.html', context)
+    return render(request, 'pages/conversations/conversation_confirm_archive.html', context)
 
 @login_required
 def conversation_unarchive(request, pk):
@@ -241,7 +241,7 @@ def conversation_unarchive(request, pk):
         'conversation': conversation,
     }
     
-    return render(request, 'conversations/conversation_confirm_unarchive.html', context)
+    return render(request, 'pages/conversations/conversation_confirm_unarchive.html', context)
 
 @login_required
 def conversation_delete(request, pk):
@@ -259,7 +259,7 @@ def conversation_delete(request, pk):
         'conversation': conversation,
     }
     
-    return render(request, 'conversations/conversation_confirm_delete.html', context)
+    return render(request, 'pages/conversations/conversation_confirm_delete.html', context)
 
 @login_required
 def create_summary(request, pk):
@@ -494,3 +494,4 @@ def conversation_export(request, conversation_id):
     response['Content-Disposition'] = f'attachment; filename="conversation_with_{conversation.character.name}_{conversation.id}.txt"'
     
     return response
+

@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+
+{% block title %}Notification Settings - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+    {% include "components/headers/page_header.html" with 
+        title="Notification Settings" 
+        subtitle="Manage how and when you receive notifications" 
+        back_url="{% url 'users:profile' %}"
+        back_text="Back to Profile"
+    %}
+
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+            <div class="px-6 py-4 border-b border-cream-dark">
+                <h3 class="font-serif font-bold text-xl text-navy">Notification Preferences</h3>
+            </div>
+            
+            <form method="post" action="{% url 'users:update_notifications' %}">
+                {% csrf_token %}
+                
+                <div class="p-6 space-y-6">
+                    <!-- Email notification settings -->
+                    <div>
+                        <h4 class="font-bold text-navy mb-3">Email Notifications</h4>
+                        <div class="space-y-4 bg-cream-light p-4 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold">Email Notifications</div>
+                                    <p class="text-sm text-navy-light">
+                                        Receive important updates about your account via email
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="email_notifications" class="sr-only peer" {% if user.email_notifications %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold">Weekly Summary</div>
+                                    <p class="text-sm text-navy-light">
+                                        Receive a weekly summary of your activity
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="weekly_summary" class="sr-only peer" {% if user.weekly_summary %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold">Marketing Communications</div>
+                                    <p class="text-sm text-navy-light">
+                                        Receive updates about new features and promotions
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="marketing_emails" class="sr-only peer" {% if user.marketing_emails %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Character notification settings -->
+                    <div>
+                        <h4 class="font-bold text-navy mb-3">Character Notifications</h4>
+                        <div class="space-y-4 bg-cream-light p-4 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold">Character Responses</div>
+                                    <p class="text-sm text-navy-light">
+                                        Receive notifications when characters respond to your messages
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="character_responses" class="sr-only peer" {% if user.character_responses %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold">Inactive Character Reminders</div>
+                                    <p class="text-sm text-navy-light">
+                                        Receive reminders about characters you haven't chatted with recently
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="inactive_reminders" class="sr-only peer" {% if user.inactive_reminders %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold">Character Birthdays</div>
+                                    <p class="text-sm text-navy-light">
+                                        Receive notifications for character birthdays and special occasions
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="character_birthdays" class="sr-only peer" {% if user.character_birthdays %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Story notification settings -->
+                    <div>
+                        <h4 class="font-bold text-navy mb-3">Story Notifications</h4>
+                        <div class="space-y-4 bg-cream-light p-4 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold">Story Updates</div>
+                                    <p class="text-sm text-navy-light">
+                                        Receive notifications when collaborators make changes to your stories
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="story_updates" class="sr-only peer" {% if user.story_updates %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold">Story Suggestions</div>
+                                    <p class="text-sm text-navy-light">
+                                        Receive AI-generated suggestions for your ongoing stories
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="story_suggestions" class="sr-only peer" {% if user.story_suggestions %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- World notification settings -->
+                    <div>
+                        <h4 class="font-bold text-navy mb-3">World Notifications</h4>
+                        <div class="space-y-4 bg-cream-light p-4 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold">World Updates</div>
+                                    <p class="text-sm text-navy-light">
+                                        Receive notifications when collaborators make changes to your worlds
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="world_updates" class="sr-only peer" {% if user.world_updates %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold">Collaboration Invitations</div>
+                                    <p class="text-sm text-navy-light">
+                                        Receive notifications when you're invited to collaborate on a world
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="collaboration_invitations" class="sr-only peer" {% if user.collaboration_invitations %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Token and subscription settings -->
+                    <div>
+                        <h4 class="font-bold text-navy mb-3">System Notifications</h4>
+                        <div class="space-y-4 bg-cream-light p-4 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold">Token Usage Alerts</div>
+                                    <p class="text-sm text-navy-light">
+                                        Receive alerts when you're approaching your token limit
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="token_alerts" class="sr-only peer" {% if user.token_alerts %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold">Subscription Reminders</div>
+                                    <p class="text-sm text-navy-light">
+                                        Receive reminders about upcoming subscription renewals
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="subscription_reminders" class="sr-only peer" {% if user.subscription_reminders %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold">New Feature Announcements</div>
+                                    <p class="text-sm text-navy-light">
+                                        Receive notifications about new features and improvements
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="feature_announcements" class="sr-only peer" {% if user.feature_announcements %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notification Delivery Method -->
+                    <div>
+                        <h4 class="font-bold text-navy mb-3">Notification Delivery</h4>
+                        <div class="space-y-4 bg-cream-light p-4 rounded-lg">
+                            <div>
+                                <div class="font-bold mb-2">How would you like to receive notifications?</div>
+                                <div class="space-y-2">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="delivery-email" name="delivery_email" class="rounded border-cream-dark text-amber focus:ring-amber" {% if user.delivery_email %}checked{% endif %}>
+                                        <label for="delivery-email" class="ml-2">
+                                            Email
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="delivery-push" name="delivery_push" class="rounded border-cream-dark text-amber focus:ring-amber" {% if user.delivery_push %}checked{% endif %}>
+                                        <label for="delivery-push" class="ml-2">
+                                            Push Notifications (requires app)
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="delivery-sms" name="delivery_sms" class="rounded border-cream-dark text-amber focus:ring-amber" {% if user.delivery_sms %}checked{% endif %}>
+                                        <label for="delivery-sms" class="ml-2">
+                                            SMS Text Messages
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if user.delivery_sms %}
+                            <div>
+                                <label for="phone-number" class="block text-sm font-medium text-navy mb-1">
+                                    Phone Number for SMS
+                                </label>
+                                <input 
+                                    type="tel" 
+                                    id="phone-number" 
+                                    name="phone_number" 
+                                    value="{{ user.phone_number }}"
+                                    class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                                    placeholder="+1 (555) 555-5555"
+                                >
+                                <p class="text-xs text-navy-light mt-1">
+                                    Standard message rates may apply. We will never share your number.
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Notification Frequency -->
+                    <div>
+                        <h4 class="font-bold text-navy mb-3">Notification Frequency</h4>
+                        <div class="space-y-4 bg-cream-light p-4 rounded-lg">
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <input type="radio" id="frequency-realtime" name="notification_frequency" value="realtime" class="text-amber" {% if user.notification_frequency == 'realtime' %}checked{% endif %}>
+                                    <label for="frequency-realtime" class="ml-2">
+                                        <span class="font-bold">Real-time</span>
+                                        <p class="text-sm text-navy-light">Receive notifications as they happen</p>
+                                    </label>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <input type="radio" id="frequency-daily" name="notification_frequency" value="daily" class="text-amber" {% if user.notification_frequency == 'daily' %}checked{% endif %}>
+                                    <label for="frequency-daily" class="ml-2">
+                                        <span class="font-bold">Daily Digest</span>
+                                        <p class="text-sm text-navy-light">Receive a daily summary of all notifications</p>
+                                    </label>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <input type="radio" id="frequency-weekly" name="notification_frequency" value="weekly" class="text-amber" {% if user.notification_frequency == 'weekly' %}checked{% endif %}>
+                                    <label for="frequency-weekly" class="ml-2">
+                                        <span class="font-bold">Weekly Digest</span>
+                                        <p class="text-sm text-navy-light">Receive a weekly summary of all notifications</p>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quiet Hours -->
+                    <div>
+                        <h4 class="font-bold text-navy mb-3">Quiet Hours</h4>
+                        <div class="space-y-4 bg-cream-light p-4 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold">Enable Quiet Hours</div>
+                                    <p class="text-sm text-navy-light">
+                                        Pause notifications during specific hours
+                                    </p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="quiet_hours_enabled" class="sr-only peer" {% if user.quiet_hours_enabled %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber"></div>
+                                </label>
+                            </div>
+                            
+                            {% if user.quiet_hours_enabled %}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="quiet-hours-start" class="block text-sm font-medium text-navy mb-1">
+                                        Start Time
+                                    </label>
+                                    <input 
+                                        type="time" 
+                                        id="quiet-hours-start" 
+                                        name="quiet_hours_start" 
+                                        value="{{ user.quiet_hours_start }}"
+                                        class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                                    >
+                                </div>
+                                
+                                <div>
+                                    <label for="quiet-hours-end" class="block text-sm font-medium text-navy mb-1">
+                                        End Time
+                                    </label>
+                                    <input 
+                                        type="time" 
+                                        id="quiet-hours-end" 
+                                        name="quiet_hours_end" 
+                                        value="{{ user.quiet_hours_end }}"
+                                        class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                                    >
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-cream-dark flex justify-between items-center">
+                        <div>
+                            <a href="{% url 'users:profile' %}" class="text-navy hover:text-amber transition duration-200">
+                                <i class="fas fa-arrow-left mr-1"></i> Back to Profile
+                            </a>
+                        </div>
+                        
+                        <button type="submit" class="bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-6 rounded-lg transition duration-200">
+                            Save Preferences
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

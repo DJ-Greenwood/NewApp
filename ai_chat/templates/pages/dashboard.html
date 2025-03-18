@@ -3,77 +3,523 @@
 {% block title %}Dashboard - MyImaginaryFriends.ai{% endblock %}
 
 {% block content %}
-{% comment %}
-    {% include "components/headers/page_header.html" with 
-        title="Welcome back, {{ user.first_name|default:user.username }}!" 
-        subtitle="Here's what's happening with your imaginary friends."
-    %}
-
-    <!-- Token usage summary -->
-    {% include "components/alerts/token_usage.html" with 
-        token_usage=token_usage 
-        token_limit=token_limit 
-        token_percent=token_percent 
-        days_until_reset=days_until_reset 
-        token_alerts=token_alerts
-    %}
-{% endcomment %}
-
-    <!-- Quick actions -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Create Character -->
-        <a href="{% url 'characters:create' %}" class="bg-white rounded-lg shadow-md p-6 paper-texture hover:shadow-lg transition duration-200 flex flex-col items-center text-center">
-            <div class="w-14 h-14 bg-amber-light rounded-full flex items-center justify-center mb-4">
-                <i class="fas fa-user-plus text-xl text-navy"></i>
-            </div>
-            <h3 class="font-serif font-bold mb-2">Create Character</h3>
-            <p class="text-sm text-navy-light">Bring a new character to life</p>
-        </a>
-        
-        <!-- Other quick actions... -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-serif font-bold text-navy">Welcome back, {{ user.first_name|default:user.username }}!</h1>
+        <p class="text-navy-light mt-2">Here's what's happening with your imaginary friends.</p>
     </div>
 
-    <!-- Recent activity and characters -->
+    <!-- Main dashboard grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Recent characters -->
-        <div class="lg:col-span-1">
-            {% comment %}
-            {% include "components/cards/card.html" with 
-                title="Your Characters" 
-                header=True 
-                header_actions='<a href="{% url 'characters:list' %}" class="text-sm text-amber hover:text-amber-dark">View all</a>'
-                content='
-                    <div class="divide-y divide-cream-dark">
-                        {% if recent_characters %}
-                            {% for character in recent_characters %}
-                            <div class="p-4 flex items-center">
-                                {% include "components/profile/avatar.html" with character=character classes="mr-4" %}
-                                <div class="flex-grow">
-                                    <div class="font-bold">{{ character.name }}</div>
-                                    <div class="text-xs text-navy-light">{{ character.total_interactions }} interactions</div>
+        <!-- Main content area (2/3 width on large screens) -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Token usage summary -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                    <h2 class="font-serif font-bold text-xl text-navy">Token Usage</h2>
+                    <a href="{% url 'token_management:overview' %}" class="text-amber hover:text-amber-dark text-sm">
+                        View Details
+                    </a>
+                </div>
+                
+                <div class="p-6">
+                    <div class="flex flex-col md:flex-row items-center justify-between mb-4">
+                        <div class="mb-4 md:mb-0">
+                            <div class="text-sm text-navy-light mb-1">Monthly Usage</div>
+                            <div class="text-2xl font-bold">{{ token_usage|default:"0" }} / {{ token_limit|default:"0" }}</div>
+                            <div class="text-sm text-navy-light">Reset in {{ days_until_reset }} days</div>
+                        </div>
+                        
+                        <div class="w-full md:w-2/3 lg:w-1/2">
+                            <div class="h-6 bg-gray-200 rounded-full overflow-hidden">
+                                <div 
+                                    class="h-full rounded-full {% if token_percent >= 90 %}bg-red-500{% elif token_percent >= 70 %}bg-yellow-500{% else %}bg-green-500{% endif %}" 
+                                    style="width: {{ token_percent }}%">
                                 </div>
-                                <a href="{% url 'conversations:create_with_character character.id' %}" class="text-amber hover:text-amber-dark">
-                                    <i class="fas fa-comment-dots"></i>
+                            </div>
+                            <div class="flex justify-between text-xs text-navy-light mt-1">
+                                <span>0%</span>
+                                <span>{{ token_percent|floatformat:"0" }}% used</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-cream-light p-3 rounded-lg">
+                            <div class="text-sm text-navy-light">Characters</div>
+                            <div class="flex justify-between items-end">
+                                <div class="text-lg font-bold">{{ character_tokens|default:"0" }}</div>
+                                <div class="text-xs text-navy-light">{{ character_percent|default:"0" }}% of total</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-cream-light p-3 rounded-lg">
+                            <div class="text-sm text-navy-light">Conversations</div>
+                            <div class="flex justify-between items-end">
+                                <div class="text-lg font-bold">{{ conversation_tokens|default:"0" }}</div>
+                                <div class="text-xs text-navy-light">{{ conversation_percent|default:"0" }}% of total</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-cream-light p-3 rounded-lg">
+                            <div class="text-sm text-navy-light">Stories</div>
+                            <div class="flex justify-between items-end">
+                                <div class="text-lg font-bold">{{ story_tokens|default:"0" }}</div>
+                                <div class="text-xs text-navy-light">{{ story_percent|default:"0" }}% of total</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if is_trial %}
+                    <div class="mt-4 border-t border-cream-dark pt-4">
+                        <a href="{% url 'token_management:trial_conversion' %}" class="text-amber hover:text-amber-dark flex items-center">
+                            <i class="fas fa-arrow-circle-up mr-2"></i>
+                            Upgrade to a paid plan for more tokens
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Recent activity -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                    <h2 class="font-serif font-bold text-xl text-navy">Recent Activity</h2>
+                    <a href="#" class="text-amber hover:text-amber-dark text-sm">
+                        View All
+                    </a>
+                </div>
+                
+                <div class="divide-y divide-cream-dark">
+                    {% if recent_activities %}
+                        {% for activity in recent_activities %}
+                        <div class="p-4 hover:bg-cream-light transition duration-200">
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 rounded-full bg-amber-light flex items-center justify-center mr-3 flex-shrink-0">
+                                    {% if activity.type == 'conversation' %}
+                                        <i class="fas fa-comment-dots text-navy"></i>
+                                    {% elif activity.type == 'character' %}
+                                        <i class="fas fa-user text-navy"></i>
+                                    {% elif activity.type == 'story' %}
+                                        <i class="fas fa-book text-navy"></i>
+                                    {% elif activity.type == 'world' %}
+                                        <i class="fas fa-globe text-navy"></i>
+                                    {% else %}
+                                        <i class="fas fa-star text-navy"></i>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="flex-grow">
+                                    <div class="flex justify-between">
+                                        <div class="font-bold">{{ activity.title }}</div>
+                                        <div class="text-xs text-navy-light">{{ activity.timestamp|date:"M d, g:i A" }}</div>
+                                    </div>
+                                    
+                                    <p class="text-sm text-navy-light">{{ activity.description }}</p>
+                                    
+                                    {% if activity.link %}
+                                    <div class="mt-2">
+                                        <a href="{{ activity.link }}" class="text-amber hover:text-amber-dark text-sm font-bold">
+                                            {% if activity.type == 'conversation' %}
+                                                <i class="fas fa-comment-dots mr-1"></i> Continue Conversation
+                                            {% elif activity.type == 'character' %}
+                                                <i class="fas fa-user mr-1"></i> View Character
+                                            {% elif activity.type == 'story' %}
+                                                <i class="fas fa-book mr-1"></i> Continue Story
+                                            {% elif activity.type == 'world' %}
+                                                <i class="fas fa-globe mr-1"></i> View World
+                                            {% else %}
+                                                <i class="fas fa-arrow-right mr-1"></i> View Details
+                                            {% endif %}
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="p-6 text-center">
+                            <div class="w-16 h-16 bg-amber-light rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-bell-slash text-2xl text-navy"></i>
+                            </div>
+                            <h3 class="text-lg font-bold mb-2">No Recent Activity</h3>
+                            <p class="text-navy-light mb-4">You haven't had any recent activity. Start by creating a character or chatting with an existing one!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Quick actions -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Create Character -->
+                <a href="{% url 'characters:create' %}" class="bg-white rounded-lg shadow-md p-4 paper-texture hover:shadow-lg transition duration-200 flex flex-col items-center text-center">
+                    <div class="w-14 h-14 bg-amber-light rounded-full flex items-center justify-center mb-3">
+                        <i class="fas fa-user-plus text-xl text-navy"></i>
+                    </div>
+                    <h3 class="font-serif font-bold mb-1">Create Character</h3>
+                    <p class="text-xs text-navy-light">Design a new imaginary friend</p>
+                </a>
+                
+                <!-- Start Conversation -->
+                <a href="{% url 'characters:list' %}" class="bg-white rounded-lg shadow-md p-4 paper-texture hover:shadow-lg transition duration-200 flex flex-col items-center text-center">
+                    <div class="w-14 h-14 bg-amber-light rounded-full flex items-center justify-center mb-3">
+                        <i class="fas fa-comment-dots text-xl text-navy"></i>
+                    </div>
+                    <h3 class="font-serif font-bold mb-1">Start Conversation</h3>
+                    <p class="text-xs text-navy-light">Chat with your characters</p>
+                </a>
+                
+                <!-- Create Story -->
+                <a href="{% url 'stories:create' %}" class="bg-white rounded-lg shadow-md p-4 paper-texture hover:shadow-lg transition duration-200 flex flex-col items-center text-center">
+                    <div class="w-14 h-14 bg-amber-light rounded-full flex items-center justify-center mb-3">
+                        <i class="fas fa-book text-xl text-navy"></i>
+                    </div>
+                    <h3 class="font-serif font-bold mb-1">Create Story</h3>
+                    <p class="text-xs text-navy-light">Write stories together</p>
+                </a>
+                
+                <!-- Build World -->
+                <a href="{% url 'worlds:create' %}" class="bg-white rounded-lg shadow-md p-4 paper-texture hover:shadow-lg transition duration-200 flex flex-col items-center text-center">
+                    <div class="w-14 h-14 bg-amber-light rounded-full flex items-center justify-center mb-3">
+                        <i class="fas fa-globe text-xl text-navy"></i>
+                    </div>
+                    <h3 class="font-serif font-bold mb-1">Build World</h3>
+                    <p class="text-xs text-navy-light">Create immersive worlds</p>
+                </a>
+            </div>
+            
+            <!-- Characters and stories grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Recent conversations -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                    <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                        <h2 class="font-serif font-bold text-xl text-navy">Recent Conversations</h2>
+                        <a href="{% url 'conversations:list' %}" class="text-amber hover:text-amber-dark text-sm">
+                            View All
+                        </a>
+                    </div>
+                    
+                    <div class="divide-y divide-cream-dark">
+                        {% if recent_conversations %}
+                            {% for conversation in recent_conversations %}
+                            <a href="{% url 'conversations:detail' conversation.id %}" class="block p-4 hover:bg-cream-light transition duration-200">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-3">
+                                        {% include "components/profile/avatar.html" with character=conversation.character size="small" %}
+                                    </div>
+                                    
+                                    <div class="flex-grow min-w-0">
+                                        <div class="flex justify-between">
+                                            <div class="font-bold truncate">
+                                                {% if conversation.title %}
+                                                    {{ conversation.title }}
+                                                {% else %}
+                                                    Conversation with {{ conversation.character.name }}
+                                                {% endif %}
+                                            </div>
+                                            <div class="text-xs text-navy-light ml-2">
+                                                {{ conversation.updated_at|date:"M d" }}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="text-sm text-navy-light truncate mt-1">
+                                            {{ conversation.last_message.content|truncatechars:50 }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                            
+                            {% if recent_conversations.count < total_conversations %}
+                            <div class="p-3 text-center">
+                                <a href="{% url 'conversations:list' %}" class="text-amber hover:text-amber-dark text-sm">
+                                    View all {{ total_conversations }} conversations
                                 </a>
                             </div>
-                            {% endfor %}
+                            {% endif %}
                         {% else %}
                             <div class="p-6 text-center">
-                                <p class="text-navy-light mb-4">You haven\'t created any characters yet.</p>
-                                <a href="{% url 'characters:create' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200">
-                                    Create Your First Character
+                                <p class="text-navy-light mb-4">You haven't started any conversations yet.</p>
+                                <a href="{% url 'characters:list' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200 text-sm">
+                                    Start a Conversation
                                 </a>
                             </div>
                         {% endif %}
                     </div>
-                '
-            %}
-            {% endcomment %}
+                </div>
+                
+                <!-- Recent stories -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                    <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                        <h2 class="font-serif font-bold text-xl text-navy">Recent Stories</h2>
+                        <a href="{% url 'stories:list' %}" class="text-amber hover:text-amber-dark text-sm">
+                            View All
+                        </a>
+                    </div>
+                    
+                    <div class="divide-y divide-cream-dark">
+                        {% if recent_stories %}
+                            {% for story in recent_stories %}
+                            <a href="{% url 'stories:detail' story.id %}" class="block p-4 hover:bg-cream-light transition duration-200">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 w-10 h-10 bg-amber-light rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-book text-navy"></i>
+                                    </div>
+                                    
+                                    <div class="flex-grow min-w-0">
+                                        <div class="flex justify-between">
+                                            <div class="font-bold truncate">{{ story.title }}</div>
+                                            <div class="text-xs text-navy-light ml-2">
+                                                {{ story.updated_at|date:"M d" }}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="text-sm text-navy-light truncate mt-1">
+                                            {{ story.description|truncatechars:50 }}
+                                        </div>
+                                        
+                                        <div class="mt-2 flex items-center">
+                                            <div class="flex -space-x-2 mr-2">
+                                                {% for character in story.characters|slice:":3" %}
+                                                <div class="w-5 h-5 rounded-full bg-navy flex items-center justify-center text-white text-xs ring-2 ring-white">
+                                                    {{ character.name|slice:":1" }}
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="text-xs text-navy-light">
+                                                {{ story.word_count }} words
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                            
+                            {% if recent_stories.count < total_stories %}
+                            <div class="p-3 text-center">
+                                <a href="{% url 'stories:list' %}" class="text-amber hover:text-amber-dark text-sm">
+                                    View all {{ total_stories }} stories
+                                </a>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="p-6 text-center">
+                                <p class="text-navy-light mb-4">You haven't created any stories yet.</p>
+                                <a href="{% url 'stories:create' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200 text-sm">
+                                    Create a Story
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
         
-        <!-- Recent activity (similar pattern) -->
-        <div class="lg:col-span-2">
-            <!-- Can reuse the card component with different content -->
+        <!-- Right sidebar (1/3 width on large screens) -->
+        <div class="lg:col-span-1 space-y-8">
+            <!-- Character spotlight -->
+            {% if spotlight_character %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                <div class="px-6 py-4 border-b border-cream-dark">
+                    <h2 class="font-serif font-bold text-xl text-navy">Character Spotlight</h2>
+                </div>
+                
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="mr-4">
+                            {% include "components/profile/avatar.html" with character=spotlight_character size="large" %}
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-xl font-bold">{{ spotlight_character.name }}</h3>
+                            <div class="text-sm text-navy-light">
+                                {{ spotlight_character.message_count }} messages exchanged
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p class="text-navy-light">{{ spotlight_character.description }}</p>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <a href="{% url 'conversations:create_with_character' spotlight_character.id %}" class="flex-1 bg-amber hover:bg-amber-dark text-navy text-center font-bold py-2 px-3 rounded-lg transition duration-200 text-sm">
+                            <i class="fas fa-comment-dots mr-1"></i> Chat
+                        </a>
+                        <a href="{% url 'stories:create_with_character' spotlight_character.id %}" class="flex-1 bg-navy hover:bg-navy-light text-cream-light text-center font-bold py-2 px-3 rounded-lg transition duration-200 text-sm">
+                            <i class="fas fa-book mr-1"></i> Story
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Your characters -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                    <h2 class="font-serif font-bold text-xl text-navy">Your Characters</h2>
+                    <a href="{% url 'characters:list' %}" class="text-amber hover:text-amber-dark text-sm">
+                        View All
+                    </a>
+                </div>
+                
+                <div class="p-6">
+                    {% if characters %}
+                        <div class="space-y-4 max-h-80 overflow-y-auto pr-2">
+                            {% for character in characters %}
+                            <div class="flex items-center bg-cream-light rounded-lg p-3">
+                                <div class="mr-3">
+                                    {% include "components/profile/avatar.html" with character=character size="small" %}
+                                </div>
+                                
+                                <div class="flex-grow min-w-0">
+                                    <div class="font-bold truncate">{{ character.name }}</div>
+                                    <div class="text-xs text-navy-light">
+                                        {{ character.total_interactions }} interactions
+                                    </div>
+                                </div>
+                                
+                                <div class="ml-2">
+                                    <a href="{% url 'conversations:create_with_character' character.id %}" class="text-amber hover:text-amber-dark" title="Chat">
+                                        <i class="fas fa-comment-dots"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <a href="{% url 'characters:create' %}" class="inline-block text-amber hover:text-amber-dark font-bold text-sm">
+                                <i class="fas fa-plus-circle mr-1"></i> Create New Character
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-6">
+                            <div class="w-16 h-16 bg-amber-light rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-user-plus text-2xl text-navy"></i>
+                            </div>
+                            <h3 class="text-lg font-bold mb-2">No Characters Yet</h3>
+                            <p class="text-navy-light mb-4">Create your first character to start chatting!</p>
+                            <a href="{% url 'characters:create' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200 text-sm">
+                                Create Character
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Your worlds -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                <div class="px-6 py-4 border-b border-cream-dark flex justify-between items-center">
+                    <h2 class="font-serif font-bold text-xl text-navy">Your Worlds</h2>
+                    <a href="{% url 'worlds:list' %}" class="text-amber hover:text-amber-dark text-sm">
+                        View All
+                    </a>
+                </div>
+                
+                <div class="p-6">
+                    {% if worlds %}
+                        <div class="space-y-4">
+                            {% for world in worlds %}
+                            <a href="{% url 'worlds:detail' world.id %}" class="block bg-cream-light hover:bg-cream rounded-lg overflow-hidden transition duration-200">
+                                <div class="h-24 bg-navy relative">
+                                    {% if world.cover_image %}
+                                    <img src="{{ world.cover_image.url }}" alt="{{ world.name }}" class="w-full h-full object-cover">
+                                    {% else %}
+                                    <div class="w-full h-full bg-gradient-to-r from-navy to-navy-light flex items-center justify-center">
+                                        <i class="fas fa-globe text-4xl text-cream-light opacity-30"></i>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-navy to-transparent px-3 py-2">
+                                        <h3 class="text-white font-bold truncate">{{ world.name }}</h3>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-3">
+                                    <div class="flex items-center text-xs space-x-4">
+                                        <span class="text-navy-light">
+                                            <i class="fas fa-users mr-1"></i> {{ world.character_count }}
+                                        </span>
+                                        <span class="text-navy-light">
+                                            <i class="fas fa-book mr-1"></i> {{ world.story_count }}
+                                        </span>
+                                        <span class="text-navy-light">
+                                            <i class="fas fa-map-marker-alt mr-1"></i> {{ world.location_count }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <a href="{% url 'worlds:create' %}" class="inline-block text-amber hover:text-amber-dark font-bold text-sm">
+                                <i class="fas fa-plus-circle mr-1"></i> Create New World
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-6">
+                            <div class="w-16 h-16 bg-amber-light rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-globe text-2xl text-navy"></i>
+                            </div>
+                            <h3 class="text-lg font-bold mb-2">No Worlds Yet</h3>
+                            <p class="text-navy-light mb-4">Create your first world to organize characters and stories!</p>
+                            <a href="{% url 'worlds:create' %}" class="inline-block bg-amber hover:bg-amber-dark text-navy font-bold py-2 px-4 rounded-lg transition duration-200 text-sm">
+                                Create World
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Tips and tricks -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden paper-texture">
+                <div class="px-6 py-4 border-b border-cream-dark">
+                    <h2 class="font-serif font-bold text-xl text-navy">Tips & Tricks</h2>
+                </div>
+                
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-amber-light rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                <i class="fas fa-lightbulb text-navy"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1">Craft Detailed Characters</h3>
+                                <p class="text-sm text-navy-light">The more background and personality details you provide, the more authentic your characters will feel.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-amber-light rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                <i class="fas fa-comment-dots text-navy"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1">Ask Open-Ended Questions</h3>
+                                <p class="text-sm text-navy-light">Instead of yes/no questions, ask your characters what they think or feel about topics.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-amber-light rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                <i class="fas fa-book text-navy"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1">Collaborative Storytelling</h3>
+                                <p class="text-sm text-navy-light">Let your characters drive parts of the narrative in your stories for surprising twists!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <a href="#" class="inline-block text-amber hover:text-amber-dark font-bold text-sm">
+                            View More Tips
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}
