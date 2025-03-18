@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up - MyImaginaryFriends.ai{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-serif font-bold text-navy">
+                <i class="fas fa-feather-alt mr-2 text-amber"></i>
+                MyImaginaryFriends
+            </h1>
+            <p class="mt-2 text-navy-light">Create your imaginary universe</p>
+        </div>
+        
+        <div class="bg-white paper-texture rounded-lg shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-cream-dark">
+                <h2 class="font-serif font-bold text-xl text-navy">Create Your Account</h2>
+            </div>
+            
+            {% if messages %}
+            <div class="p-4">
+                {% for message in messages %}
+                <div class="p-3 mb-3 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-700{% elif message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-amber-light bg-opacity-30 text-navy{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post" action="{% url 'users:signup' %}">
+                {% csrf_token %}
+                
+                <div class="p-6 space-y-4">
+                    {% if form.errors %}
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        <p class="font-bold">Please correct the errors below.</p>
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                            <p class="mt-1 text-sm">{{ field.label }}: {{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-navy mb-1">
+                            Username <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            value="{{ form.username.value|default:'' }}"
+                            class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                            required
+                            autofocus
+                        >
+                        <p class="text-xs text-navy-light mt-1">
+                            Letters, digits, and @/./+/-/_ only. Maximum 150 characters.
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-navy mb-1">
+                            Email Address <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            value="{{ form.email.value|default:'' }}"
+                            class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="first_name" class="block text-sm font-medium text-navy mb-1">
+                                First Name
+                            </label>
+                            <input 
+                                type="text" 
+                                id="first_name" 
+                                name="first_name" 
+                                value="{{ form.first_name.value|default:'' }}"
+                                class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                            >
+                        </div>
+                        
+                        <div>
+                            <label for="last_name" class="block text-sm font-medium text-navy mb-1">
+                                Last Name
+                            </label>
+                            <input 
+                                type="text" 
+                                id="last_name" 
+                                name="last_name" 
+                                value="{{ form.last_name.value|default:'' }}"
+                                class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="password1" class="block text-sm font-medium text-navy mb-1">
+                            Password <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="password" 
+                            id="password1" 
+                            name="password1" 
+                            class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                            required
+                        >
+                        <p class="text-xs text-navy-light mt-1">
+                            Password must be at least 8 characters and include a mix of letters, numbers, and symbols.
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label for="password2" class="block text-sm font-medium text-navy mb-1">
+                            Confirm Password <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="password" 
+                            id="password2" 
+                            name="password2" 
+                            class="w-full rounded-lg border-cream-dark focus:ring-amber focus:border-amber"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h3 class="font-bold text-navy mb-2">Choose Your Plan</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="subscription_tier" value="free" class="sr-only peer" checked>
+                                <div class="p-3 border-2 rounded-lg peer-checked:border-amber peer-checked:bg-amber-light transition-all text-center">
+                                    <div class="font-bold">Free</div>
+                                    <div class="text-sm text-navy-light">$0/month</div>
+                                </div>
+                            </label>
+                            
+                            <label class="cursor-pointer">
+                                <input type="radio" name="subscription_tier" value="basic" class="sr-only peer" {% if initial_plan == 'basic' %}checked{% endif %}>
+                                <div class="p-3 border-2 rounded-lg peer-checked:border-amber peer-checked:bg-amber-light transition-all text-center">
+                                    <div class="font-bold">Basic</div>
+                                    <div class="text-sm text-navy-light">$9.99/month</div>
+                                </div>
+                            </label>
+                            
+                            <label class="cursor-pointer">
+                                <input type="radio" name="subscription_tier" value="enterprise" class="sr-only peer" {% if initial_plan == 'enterprise' %}checked{% endif %}>
+                                <div class="p-3 border-2 rounded-lg peer-checked:border-amber peer-checked:bg-amber-light transition-all text-center">
+                                    <div class="font-bold">Enterprise</div>
+                                    <div class="text-sm text-navy-light">$29.99/month</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start mt-4">
+                        <div class="flex items-center h-5">
+                            <input 
+                                type="checkbox" 
+                                id="agree_terms" 
+                                name="agree_terms" 
+                                class="rounded border-cream-dark text-amber focus:ring-amber"
+                                required
+                            >
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="agree_terms" class="text-navy-light">
+                                I agree to the <a href="#" class="text-amber hover:text-amber-dark">Terms of Service</a> and <a href="#" class="text-amber hover:text-amber-dark">Privacy Policy</a>.
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="px-6 py-4 border-t border-cream-dark bg-cream-light">
+                    <button type="submit" class="w-full bg-amber hover:bg-amber-dark text-navy font-bold py-3 px-4 rounded-lg transition duration-200">
+                        Create Account
+                    </button>
+                    
+                    <div class="mt-4 text-center">
+                        <span class="text-navy-light">Already have an account?</span>
+                        <a href="{% url 'users:login' %}" class="ml-1 text-amber hover:text-amber-dark">
+                            Log in
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="mt-6 flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <a href="{% url 'users:connect_google' %}" class="flex items-center justify-center px-4 py-2 border border-cream-dark rounded-lg text-navy bg-white hover:bg-cream-light transition duration-200">
+                <i class="fab fa-google text-xl mr-2"></i>
+                <span>Sign up with Google</span>
+            </a>
+            
+            <a href="#" class="flex items-center justify-center px-4 py-2 border border-cream-dark rounded-lg text-navy bg-white hover:bg-cream-light transition duration-200">
+                <i class="fab fa-apple text-xl mr-2"></i>
+                <span>Sign up with Apple</span>
+            </a>
+        </div>
+        
+        <div class="text-center mt-8 text-sm text-navy-light">
+            <p>
+                Need help? <a href="{% url 'contact' %}" class="text-amber hover:text-amber-dark">Contact Support</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

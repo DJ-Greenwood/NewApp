@@ -19,34 +19,6 @@ from django.urls import reverse
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 
-
-def signup(request):
-    """User registration view"""
-    if request.user.is_authenticated:
-        return redirect('home')
-    
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            
-            # Create token limit settings
-            UserTokenLimit.objects.create(
-                user=user,
-                monthly_limit=50000  # Default free tier
-            )
-            
-            # Log the user in
-            login(request, user)
-            messages.success(request, "Registration successful. Welcome to MyImaginaryFriends.ai!")
-            return redirect('home')
-        else:
-            messages.error(request, "Registration failed. Please correct the errors below.")
-    else:
-        form = CustomUserCreationForm()
-    
-    return render(request, 'users/signup.html', {'form': form})
-
 def login_view(request):
     """User login view"""
     if request.user.is_authenticated:
@@ -69,7 +41,7 @@ def login_view(request):
         else:
             messages.error(request, "Invalid username or password.")
     
-    return render(request, 'users/login.html')
+    return render(request, 'component/profile/login.html')
 
 def logout_view(request):
     """User logout view"""
@@ -120,85 +92,6 @@ def profile_view(request):
     
     return render(request, 'components/profile/profile.html', context)
 
-@login_required
-def edit_profile(request):
-    """Edit user profile"""
-    user = request.user
-    
-    if request.method == 'POST':
-        form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Profile updated successfully.")
-            return redirect('users:profile')
-        else:
-            messages.error(request, "Please correct the errors below.")
-    else:
-        form = CustomUserChangeForm(instance=user)
-    
-    return render(request, 'users/edit_profile.html', {'form': form})
-
-@login_required
-def edit_preferences(request):
-    """Edit user preferences"""
-    user = request.user
-    
-    if request.method == 'POST':
-        form = UserPreferencesForm(user, request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Preferences updated successfully.")
-            return redirect('users:profile')
-        else:
-            messages.error(request, "Please correct the errors below.")
-    else:
-        form = UserPreferencesForm(user)
-    
-    return render(request, 'users/edit_preferences.html', {'form': form})
-
-@login_required
-def usage_stats(request):
-    """View token usage statistics"""
-    user = request.user
-    
-    # Get monthly breakdown
-    monthly_stats = []
-    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    
-    current_year = timezone.now().year
-    
-    for i, month_name in enumerate(months, 1):
-        tokens = TokenUsage.objects.filter(
-            user=user,
-            timestamp__month=i,
-            timestamp__year=current_year
-        ).aggregate(Sum('tokens_used'))['tokens_used__sum'] or 0
-        
-        monthly_stats.append({
-            'month': month_name,
-            'tokens': tokens
-        })
-    
-    # Get feature breakdown
-    feature_stats = []
-    for feature_code, feature_name in TokenUsage.FEATURE_CHOICES:
-        tokens = TokenUsage.objects.filter(
-            user=user,
-            feature=feature_code
-        ).aggregate(Sum('tokens_used'))['tokens_used__sum'] or 0
-        
-        feature_stats.append({
-            'feature': feature_name,
-            'tokens': tokens
-        })
-    
-    context = {
-        'monthly_stats': monthly_stats,
-        'feature_stats': feature_stats,
-        'total_tokens': sum(item['tokens'] for item in monthly_stats),
-    }
-    
-    return render(request, 'users/usage_stats.html', context)
 
 @login_required
 def subscription_view(request):
@@ -258,7 +151,7 @@ def subscription_view(request):
         'tiers': tiers,
     }
     
-    return render(request, 'users/subscription.html', context)
+    return render(request, 'component/profile/subscription.html', context)
 
 def signup(request):
     """
@@ -315,60 +208,10 @@ def signup(request):
     # Get plan info from query parameters (for upgrade links from pricing page)
     initial_plan = request.GET.get('plan', 'free')
     
-    return render(request, 'users/signup.html', {
+    return render(request, 'component/profile/signup.html', {
         'form': form,
         'initial_plan': initial_plan
     })
-
-
-class CustomPasswordResetView(PasswordResetView):
-    """
-    Custom view for password reset request.
-    Displays a form for users to request a password reset email.
-    """
-    template_name = 'users/password_reset.html'
-    email_template_name = 'users/password_reset_email.html'
-    subject_template_name = 'users/password_reset_subject.txt'
-    success_url = reverse_lazy('users:password_reset_done')
-
-class CustomPasswordResetDoneView(PasswordResetDoneView):
-    """
-    Custom view for password reset request confirmation.
-    Shown after a user successfully submits a password reset request.
-    """
-    template_name = 'users/password_reset_done.html'
-
-class CustomPasswordResetConfirmView(PasswordResetConfirmView):
-    """
-    Custom view for password reset confirmation.
-    Allows users to set a new password using the link from the reset email.
-    """
-    template_name = 'users/password_reset_confirm.html'
-    success_url = reverse_lazy('users:password_reset_complete')
-
-class CustomPasswordResetCompleteView(PasswordResetCompleteView):
-    """
-    Custom view for password reset completion.
-    Shown after a user successfully sets a new password.
-    """
-    template_name = 'users/password_reset_complete.html'
-
-@method_decorator(login_required, name='dispatch')
-class CustomPasswordChangeView(PasswordChangeView):
-    """
-    Custom view for changing password.
-    Allows authenticated users to change their password.
-    """
-    template_name = 'users/password_change.html'
-    success_url = reverse_lazy('users:password_change_done')
-
-@method_decorator(login_required, name='dispatch')
-class CustomPasswordChangeDoneView(PasswordChangeDoneView):
-    """
-    Custom view for password change completion.
-    Shown after a user successfully changes their password.
-    """
-    template_name = 'users/password_change_done.html'
 
 @login_required
 @require_http_methods(["GET", "POST"])
@@ -517,7 +360,7 @@ def change_password(request):
             return redirect('users:profile')
         else:
             messages.error(request, 'Please correct the errors below.')
-            return render(request, 'pages/users/change_password.html', {'form': form})
+            return render(request, 'component/profile/change_password.html', {'form': form})
     else:
         form = PasswordChangeForm(request.user)
     
